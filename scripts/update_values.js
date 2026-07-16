@@ -8,6 +8,346 @@ const AMVGG_URLS = [
 
 const OUT_FILE = "values";
 
+const MANUAL_CATEGORY_MULTIPLIERS = {
+  "0": {
+    "NP": 0.0857142857,
+    "F": 0.6,
+    "R": 0.5142857143,
+    "N": 0.2142857143,
+    "NF": 0.7571428571,
+    "NR": 0.6,
+    "M": 0.45,
+    "MF": 0.775,
+    "MR": 0.65
+  },
+  "1": {
+    "NP": 0.0857142857,
+    "F": 0.6,
+    "R": 0.5142857143,
+    "N": 0.2142857143,
+    "NF": 0.7571428571,
+    "NR": 0.6,
+    "M": 0.45,
+    "MF": 0.775,
+    "MR": 0.65
+  },
+  "2": {
+    "NP": 0.0857142857,
+    "F": 0.6,
+    "R": 0.5142857143,
+    "N": 0.2142857143,
+    "NF": 0.7571428571,
+    "NR": 0.6,
+    "M": 0.45,
+    "MF": 0.775,
+    "MR": 0.65
+  },
+  "3": {
+    "NP": 0.1263157895,
+    "F": 0.6526315789,
+    "R": 0.6105263158,
+    "N": 0.5473684211,
+    "NF": 0.8105263158,
+    "NR": 0.8,
+    "M": 0.7261538462,
+    "MF": 0.8492307692,
+    "MR": 0.8
+  },
+  "4": {
+    "NP": 0.1636363636,
+    "F": 0.7090909091,
+    "R": 0.6545454545,
+    "N": 0.6272727273,
+    "NF": 0.8181818182,
+    "NR": 0.8090909091,
+    "M": 0.75,
+    "MF": 0.86,
+    "MR": 0.825
+  },
+  "5": {
+    "NP": 0.2,
+    "F": 0.7333333333,
+    "R": 0.6833333333,
+    "N": 0.675,
+    "NF": 0.8333333333,
+    "NR": 0.8166666667,
+    "M": 0.7755555556,
+    "MF": 0.8911111111,
+    "MR": 0.8511111111
+  },
+  "6": {
+    "NP": 0.3,
+    "F": 0.75,
+    "R": 0.7,
+    "N": 0.725,
+    "NF": 0.8666666667,
+    "NR": 0.85,
+    "M": 0.8244444444,
+    "MF": 0.9244444444,
+    "MR": 0.9
+  },
+  "7": {
+    "NP": 0.4571428571,
+    "F": 0.7714285714,
+    "R": 0.7285714286,
+    "N": 0.75,
+    "NF": 0.91,
+    "NR": 0.9,
+    "M": 0.85,
+    "MF": 0.95,
+    "MR": 0.92
+  },
+  "8": {
+    "NP": 0.5529411765,
+    "F": 0.8,
+    "R": 0.7529411765,
+    "N": 0.7709090909,
+    "NF": 0.9163636364,
+    "NR": 0.9018181818,
+    "M": 0.8754545455,
+    "MF": 0.96,
+    "MR": 0.93
+  },
+  "9": {
+    "NP": 0.6538461538,
+    "F": 0.8538461538,
+    "R": 0.8230769231,
+    "N": 0.8495238095,
+    "NF": 0.940952381,
+    "NR": 0.9257142857,
+    "M": 0.9252380952,
+    "MF": 0.9752380952,
+    "MR": 0.95
+  },
+  "10": {
+    "NP": 0.8,
+    "F": 0.925,
+    "R": 0.9,
+    "N": 0.925,
+    "NF": 0.97,
+    "NR": 0.96,
+    "M": 0.2727272727,
+    "MF": 0.99,
+    "MR": 0.98
+  },
+  "11": {
+    "NP": 0.9,
+    "F": 0.975,
+    "R": 0.95,
+    "N": 1.0,
+    "NF": 0.9852307692,
+    "NR": 0.9803076923,
+    "M": 1.05,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "12": {
+    "NP": 0.8965517241,
+    "F": 0.9793103448,
+    "R": 0.9517241379,
+    "N": 1.03,
+    "NF": 0.985,
+    "NR": 0.98,
+    "M": 1.1,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "13": {
+    "NP": 0.9936305732,
+    "F": 1.0,
+    "R": 1.0,
+    "N": 1.0094339623,
+    "NF": 1.0,
+    "NR": 1.0,
+    "M": 1.0374331551,
+    "MF": 1.0053475936,
+    "MR": 1.0053475936
+  },
+  "21": {
+    "NP": 0.7692307692,
+    "F": 0.8846153846,
+    "R": 0.8461538462,
+    "N": 0.88,
+    "NF": 0.95,
+    "NR": 0.93,
+    "M": 1.0,
+    "MF": 0.99,
+    "MR": 0.98
+  },
+  "22": {
+    "NP": 0.7636363636,
+    "F": 0.8727272727,
+    "R": 0.8727272727,
+    "N": 0.88,
+    "NF": 0.95,
+    "NR": 0.93,
+    "M": 0.97,
+    "MF": 0.99,
+    "MR": 0.98
+  },
+  "23": {
+    "NP": 0.7,
+    "F": 0.8533333333,
+    "R": 0.8,
+    "N": 0.85,
+    "NF": 0.93,
+    "NR": 0.9,
+    "M": 0.95,
+    "MF": 0.985,
+    "MR": 0.965
+  },
+  "33": {
+    "NP": 0.1395348837,
+    "F": 0.6511627907,
+    "R": 0.6046511628,
+    "N": 0.3529411765,
+    "NF": 0.8,
+    "NR": 0.7529411765,
+    "M": 0.5018181818,
+    "MF": 0.8,
+    "MR": 0.7018181818
+  },
+  "44": {
+    "NP": 0.9720930233,
+    "F": 0.9860465116,
+    "R": 0.9813953488,
+    "N": 1.0,
+    "NF": 1.0,
+    "NR": 1.0,
+    "M": 1.025,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "50": {
+    "NP": 0.9851851852,
+    "F": 0.9955555556,
+    "R": 0.9896296296,
+    "N": 1.0,
+    "NF": 1.0,
+    "NR": 1.0,
+    "M": 1.025,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "66": {
+    "NP": 0.9,
+    "F": 0.98,
+    "R": 0.96,
+    "N": 1.0,
+    "NF": 0.985,
+    "NR": 0.98,
+    "M": 1.125,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "69": {
+    "NP": 0.9028571429,
+    "F": 0.9714285714,
+    "R": 0.9485714286,
+    "N": 0.96,
+    "NF": 0.9850746269,
+    "NR": 0.98,
+    "M": 1.0,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "70": {
+    "NP": 0.9381818182,
+    "F": 0.9818181818,
+    "R": 0.96,
+    "N": 0.97,
+    "NF": 0.99,
+    "NR": 0.98,
+    "M": 1.0,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "72": {
+    "NP": 0.94,
+    "F": 0.98,
+    "R": 0.96,
+    "N": 0.9701098901,
+    "NF": 0.9901098901,
+    "NR": 0.98,
+    "M": 1.05,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "79": {
+    "NP": 0.9692307692,
+    "F": 0.9846153846,
+    "R": 0.9794871795,
+    "N": 1.0,
+    "NF": 1.0,
+    "NR": 1.0,
+    "M": 1.0500215054,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "81": {
+    "NP": 0.98,
+    "F": 0.99,
+    "R": 0.985,
+    "N": 1.0,
+    "NF": 1.0,
+    "NR": 1.0,
+    "M": 1.025,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "99": {
+    "NP": 0.8,
+    "F": 0.9166666667,
+    "R": 0.9,
+    "N": 0.9502040816,
+    "NF": 0.98,
+    "NR": 0.9751020408,
+    "M": 1.0,
+    "MF": 1.0,
+    "MR": 1.0
+  },
+  "111": {
+    "NP": 0.0333333333,
+    "F": 0.6,
+    "R": 0.5,
+    "N": 0.1272727273,
+    "NF": 0.7454545455,
+    "NR": 0.6,
+    "M": 0.3272727273,
+    "MF": 0.7545454545,
+    "MR": 0.6545454545
+  },
+  "222": {
+    "NP": 0.0333333333,
+    "F": 0.5666666667,
+    "R": 0.4666666667,
+    "N": 0.08,
+    "NF": 0.66,
+    "NR": 0.5,
+    "M": 0.275,
+    "MF": 0.65,
+    "MR": 0.55
+  },
+  "333": {
+    "NP": 0.0333333333,
+    "F": 0.6,
+    "R": 0.5,
+    "N": 0.1,
+    "NF": 0.7,
+    "NR": 0.56,
+    "M": 0.3,
+    "MF": 0.7,
+    "MR": 0.6
+  }
+};
+
+const MANUAL_CATEGORY_NOTES = {
+  "3": "DFR was omitted in the supplied category text; using Arctic Hare DFR/FR 0.0048.",
+  "5": "NFR was omitted in the supplied category text; using Angus Bull NFR 0.012.",
+  "8": "DFR was omitted in the supplied category text; using Binturong DFR/FR 0.0085.",
+  "10": "DFR was omitted in the supplied category text; using Arctic Fox DFR/FR 0.04."
+};
+
 const VARIANTS = {
   NP: { raw: "npRegularValue", base: "FR", baseRaw: "regularValue" },
   F: { raw: "fValue", base: "FR", baseRaw: "regularValue" },
@@ -41,7 +381,7 @@ function toNumber(value) {
   if (value === null || value === undefined) return 0;
 
   const cleaned = String(value).replace(/,/g, "").trim();
-  if (!cleaned) return 0;
+  if (!cleaned || cleaned === "null") return 0;
 
   const n = Number(cleaned);
   return Number.isFinite(n) && n > 0 ? n : 0;
@@ -50,22 +390,6 @@ function toNumber(value) {
 function roundValue(value) {
   if (!Number.isFinite(value) || value <= 0) return 0;
   return Math.round(value * 1000000) / 1000000;
-}
-
-function median(values) {
-  const clean = values
-    .filter(v => Number.isFinite(v) && v > 0)
-    .sort((a, b) => a - b);
-
-  if (clean.length === 0) return 0;
-
-  const mid = Math.floor(clean.length / 2);
-
-  if (clean.length % 2 === 1) {
-    return clean[mid];
-  }
-
-  return (clean[mid - 1] + clean[mid]) / 2;
 }
 
 function getStringField(obj, keys) {
@@ -240,21 +564,7 @@ function extractCategoryId(obj) {
     }
   }
 
-  // Last fallback: group by demand pattern.
-  // This is not as good as AMVGG's real category ID, but prevents everything
-  // from collapsing into one bucket if the category field name changes.
-  const demandKey = [
-    obj.regularDemand,
-    obj.neonDemand,
-    obj.megaDemand,
-    obj.npRegularDemand,
-    obj.npNeonDemand,
-    obj.npMegaDemand
-  ]
-    .map(v => v || "null")
-    .join("|");
-
-  return "demand:" + demandKey;
+  return "unknown";
 }
 
 function makeAliases(displayName, key) {
@@ -348,6 +658,7 @@ function convertAmvggObject(obj) {
       valueMeta: {
         calculated: {},
         multiplierSource: {},
+        confidence: {},
         originalRaw: {}
       },
 
@@ -405,123 +716,20 @@ function extractItemsFromText(text) {
   return items;
 }
 
-function buildMultiplierSamples(rawItems) {
-  const byCategory = {};
-  const global = {};
+function getManualMultiplier(categoryId, variant) {
+  const categoryMultipliers = MANUAL_CATEGORY_MULTIPLIERS[String(categoryId || "")];
 
-  for (const variant of Object.keys(VARIANTS)) {
-    if (BASE_VARIANTS.has(variant)) continue;
-    global[variant] = [];
+  if (!categoryMultipliers) {
+    return 0;
   }
 
-  for (const item of rawItems) {
-    const categoryId = item.categoryId || "unknown";
-
-    if (!byCategory[categoryId]) {
-      byCategory[categoryId] = {};
-    }
-
-    for (const variant of Object.keys(VARIANTS)) {
-      if (BASE_VARIANTS.has(variant)) continue;
-
-      if (!byCategory[categoryId][variant]) {
-        byCategory[categoryId][variant] = [];
-      }
-
-      const exactValue = item.rawValues[variant];
-      const baseVariant = VARIANTS[variant].base;
-      const baseValue = item.rawValues[baseVariant];
-
-      if (!exactValue || !baseValue || exactValue <= 0 || baseValue <= 0) {
-        continue;
-      }
-
-      const ratio = exactValue / baseValue;
-
-      // Filter obvious bad ratios.
-      // Most potion/no-potion modifiers should be close-ish to 1.
-      // This still allows high no-pot premium categories.
-      if (!Number.isFinite(ratio) || ratio <= 0.05 || ratio >= 3.5) {
-        continue;
-      }
-
-      byCategory[categoryId][variant].push(ratio);
-      global[variant].push(ratio);
-    }
-  }
-
-  return { byCategory, global };
+  return toNumber(categoryMultipliers[variant]);
 }
 
-function summarizeMultipliers(samples) {
-  const categoryMultipliers = {};
-  const globalMultipliers = {};
-
-  for (const variant of Object.keys(samples.global)) {
-    const sampleList = samples.global[variant] || [];
-
-    globalMultipliers[variant] = {
-      multiplier: roundValue(median(sampleList)),
-      samples: sampleList.length
-    };
-  }
-
-  for (const [categoryId, categorySamples] of Object.entries(samples.byCategory)) {
-    categoryMultipliers[categoryId] = {};
-
-    for (const variant of Object.keys(VARIANTS)) {
-      if (BASE_VARIANTS.has(variant)) continue;
-
-      const sampleList = categorySamples[variant] || [];
-      const categoryMedian = median(sampleList);
-
-      if (categoryMedian > 0) {
-        categoryMultipliers[categoryId][variant] = {
-          multiplier: roundValue(categoryMedian),
-          samples: sampleList.length
-        };
-      }
-    }
-  }
-
-  return { categoryMultipliers, globalMultipliers };
-}
-
-function getMultiplierForVariant(categoryId, variant, multipliers) {
-  const categoryInfo = multipliers.categoryMultipliers[categoryId];
-
-  if (
-    categoryInfo &&
-    categoryInfo[variant] &&
-    categoryInfo[variant].multiplier > 0
-  ) {
-    return {
-      multiplier: categoryInfo[variant].multiplier,
-      source: "category:" + categoryId,
-      samples: categoryInfo[variant].samples
-    };
-  }
-
-  const globalInfo = multipliers.globalMultipliers[variant];
-
-  if (globalInfo && globalInfo.multiplier > 0) {
-    return {
-      multiplier: globalInfo.multiplier,
-      source: "global",
-      samples: globalInfo.samples
-    };
-  }
-
-  return {
-    multiplier: 0,
-    source: "none",
-    samples: 0
-  };
-}
-
-function fillMissingValues(item, multipliers) {
+function fillMissingValues(item) {
   const out = item.value;
-  const categoryId = item.categoryId;
+  const categoryId = String(item.categoryId || "");
+  const hasManualCategory = Boolean(MANUAL_CATEGORY_MULTIPLIERS[categoryId]);
 
   for (const variant of Object.keys(VARIANTS)) {
     const rawValue = item.rawValues[variant] || 0;
@@ -532,6 +740,7 @@ function fillMissingValues(item, multipliers) {
       out[variant] = rawValue;
       out.valueMeta.calculated[variant] = false;
       out.valueMeta.multiplierSource[variant] = "amvgg-direct";
+      out.valueMeta.confidence[variant] = "direct";
       continue;
     }
 
@@ -539,6 +748,7 @@ function fillMissingValues(item, multipliers) {
       out[variant] = 0;
       out.valueMeta.calculated[variant] = false;
       out.valueMeta.multiplierSource[variant] = "missing-base";
+      out.valueMeta.confidence[variant] = "blocked";
       continue;
     }
 
@@ -549,24 +759,48 @@ function fillMissingValues(item, multipliers) {
       out[variant] = 0;
       out.valueMeta.calculated[variant] = false;
       out.valueMeta.multiplierSource[variant] = "missing-base";
+      out.valueMeta.confidence[variant] = "blocked";
       continue;
     }
 
-    const multiplierInfo = getMultiplierForVariant(categoryId, variant, multipliers);
-
-    if (multiplierInfo.multiplier <= 0) {
+    if (!hasManualCategory) {
       out[variant] = 0;
       out.valueMeta.calculated[variant] = false;
-      out.valueMeta.multiplierSource[variant] = "no-multiplier";
+      out.valueMeta.multiplierSource[variant] = "no-manual-category";
+      out.valueMeta.confidence[variant] = "blocked";
       continue;
     }
 
-    out[variant] = roundValue(baseValue * multiplierInfo.multiplier);
+    const multiplier = getManualMultiplier(categoryId, variant);
+
+    if (multiplier <= 0) {
+      out[variant] = 0;
+      out.valueMeta.calculated[variant] = false;
+      out.valueMeta.multiplierSource[variant] = "no-manual-multiplier";
+      out.valueMeta.confidence[variant] = "blocked";
+      continue;
+    }
+
+    out[variant] = roundValue(baseValue * multiplier);
     out.valueMeta.calculated[variant] = true;
-    out.valueMeta.multiplierSource[variant] = multiplierInfo.source;
+    out.valueMeta.multiplierSource[variant] = "manual-category:" + categoryId;
+    out.valueMeta.confidence[variant] = "manual-category";
   }
 
   return out;
+}
+
+function buildCategoryCounts(rawItems) {
+  const counts = {};
+
+  for (const item of rawItems) {
+    const categoryId = String(item.categoryId || "unknown");
+    counts[categoryId] = (counts[categoryId] || 0) + 1;
+  }
+
+  return Object.fromEntries(
+    Object.entries(counts).sort(([a], [b]) => Number(a) - Number(b))
+  );
 }
 
 async function main() {
@@ -590,11 +824,9 @@ async function main() {
   }
 
   const rawItems = Array.from(allItems.values());
-  const samples = buildMultiplierSamples(rawItems);
-  const multipliers = summarizeMultipliers(samples);
 
   for (const item of rawItems) {
-    fillMissingValues(item, multipliers);
+    fillMissingValues(item);
   }
 
   const sortedItems = Object.fromEntries(
@@ -604,29 +836,29 @@ async function main() {
   );
 
   const output = {
-    version: 2,
+    version: 3,
     updatedAt: new Date().toISOString(),
-    source: "amvgg-auto-generated-with-category-multipliers",
+    source: "amvgg-auto-generated-with-manual-category-multipliers",
     sourceUrls: AMVGG_URLS,
     itemCount: Object.keys(sortedItems).length,
 
-    multiplierRules: {
-      NP: "FR * category NP multiplier",
-      F: "FR * category F multiplier",
-      R: "FR * category R multiplier",
-      N: "NFR * category N multiplier",
-      NF: "NFR * category NF multiplier",
-      NR: "NFR * category NR multiplier",
-      M: "MFR * category M multiplier",
-      MF: "MFR * category MF multiplier",
-      MR: "MFR * category MR multiplier"
+    valueRules: {
+      NP: "D / DFR, then FR * category NP multiplier when AMVGG direct value is missing",
+      F: "DF / DFR, then FR * category F multiplier when AMVGG direct value is missing",
+      R: "DR / DFR, then FR * category R multiplier when AMVGG direct value is missing",
+      N: "N / NFR, then NFR * category N multiplier when AMVGG direct value is missing",
+      NF: "NF / NFR, then NFR * category NF multiplier when AMVGG direct value is missing",
+      NR: "NR / NFR, then NFR * category NR multiplier when AMVGG direct value is missing",
+      M: "M / MFR, then MFR * category M multiplier when AMVGG direct value is missing",
+      MF: "MF / MFR, then MFR * category MF multiplier when AMVGG direct value is missing",
+      MR: "MR / MFR, then MFR * category MR multiplier when AMVGG direct value is missing"
     },
 
     variantKeys: {
-      NP: "No Potion / Normal",
-      F: "Fly Only",
-      R: "Ride Only",
-      FR: "Fly Ride",
+      NP: "Default / Normal / No Potion",
+      F: "Default Fly",
+      R: "Default Ride",
+      FR: "Default Fly Ride",
       N: "Neon No Potion",
       NF: "Neon Fly",
       NR: "Neon Ride",
@@ -637,8 +869,11 @@ async function main() {
       MFR: "Mega Fly Ride"
     },
 
-    categoryMultipliers: multipliers.categoryMultipliers,
-    globalMultipliers: multipliers.globalMultipliers,
+    manualCategoryMultiplierCount: Object.keys(MANUAL_CATEGORY_MULTIPLIERS).length,
+    manualCategoryMultipliers: MANUAL_CATEGORY_MULTIPLIERS,
+    manualCategoryNotes: MANUAL_CATEGORY_NOTES,
+    categoryPetCounts: buildCategoryCounts(rawItems),
+
     items: sortedItems
   };
 
