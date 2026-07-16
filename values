@@ -1,1 +1,22 @@
-
+{
+  "version": 1,
+  "updatedAt": "2026-07-16",
+  "source": "xyneria-values-bridge",
+  "status": "empty-starter",
+  "notes": "This file will be auto-generated later. Until items are added, Xyneria Hub should block value-based auto accept/confirm.",
+  "variantKeys": {
+    "NP": "No Potion / Normal",
+    "F": "Fly Only",
+    "R": "Ride Only",
+    "FR": "Fly Ride",
+    "N": "Neon No Potion",
+    "NF": "Neon Fly",
+    "NR": "Neon Ride",
+    "NFR": "Neon Fly Ride",
+    "M": "Mega No Potion",
+    "MF": "Mega Fly",
+    "MR": "Mega Ride",
+    "MFR": "Mega Fly Ride"
+  },
+  "items": {}
+}
