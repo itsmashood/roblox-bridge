@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "updatedAt": "2026-07-23T14:01:39.660Z",
+  "updatedAt": "2026-07-23T19:18:57.798Z",
   "source": "amvgg-auto-generated-with-manual-category-multipliers",
   "sourceUrls": [
     "https://amvgg.com/calculator?_rsc=19zvn",
@@ -692,15 +692,15 @@
       "MR": 0.8,
       "MFR": 0.8,
       "demand": {
-        "regular": "High",
+        "regular": "Medium",
         "noPotionRegular": null,
         "fly": null,
         "ride": null,
-        "neon": "High",
+        "neon": "Medium",
         "noPotionNeon": null,
         "neonFly": null,
         "neonRide": null,
-        "mega": "High",
+        "mega": "Medium",
         "noPotionMega": null,
         "megaFly": null,
         "megaRide": null
@@ -13569,7 +13569,7 @@
       "NF": 0.395,
       "NR": 0.395,
       "NFR": 0.4,
-      "M": 1.4,
+      "M": 1.425,
       "MF": 1.15,
       "MR": 1.15,
       "MFR": 1.14,
@@ -13639,7 +13639,7 @@
           "NF": 0.395,
           "NR": 0.395,
           "NFR": 0.4,
-          "M": 1.4,
+          "M": 1.425,
           "MF": 1.15,
           "MR": 1.15,
           "MFR": 1.14
