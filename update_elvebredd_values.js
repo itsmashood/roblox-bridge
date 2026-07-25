@@ -18,7 +18,7 @@
 const fs = require("fs/promises");
 
 const ELVEBREDD_URL = process.env.ELVEBREDD_URL || "https://elvebredd.com/adopt-me-calculator";
-const OUT_FILE = process.env.OUT_FILE || "values";
+const OUT_FILE = process.env.OUT_FILE || "values_elvebredd";
 const MIN_ITEMS = Number(process.env.MIN_ITEMS || 100);
 
 const VARIANTS = ["NP", "F", "R", "FR", "N", "NF", "NR", "NFR", "M", "MF", "MR", "MFR"];
