@@ -25,7 +25,14 @@ jobs:
         run: node update_elvebredd_values.js
 
       - name: Commit updated values
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Update Elvebredd values"
-          file_pattern: values
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add values_elvebredd
+          git status --short
+          if git diff --cached --quiet; then
+            echo "No values_elvebredd changes to commit."
+          else
+            git commit -m "Update Elvebredd values"
+            git push
+          fi
