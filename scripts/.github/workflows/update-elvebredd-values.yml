@@ -28,4 +28,4 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update Elvebredd values"
-          file_pattern: values
+          file_pattern: values_elvebredd
