@@ -1,0 +1,31 @@
+name: Update Elvebredd Values
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+permissions:
+  contents: write
+
+jobs:
+  update-values:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Update values from Elvebredd
+        run: node update_elvebredd_values.js
+
+      - name: Commit updated values
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Update Elvebredd values"
+          file_pattern: values
