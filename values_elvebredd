@@ -1,9 +1,9 @@
 {
   "version": 5,
-  "updatedAt": "2026-08-07T13:08:04.400Z",
+  "updatedAt": "2026-08-07T18:59:53.810Z",
   "source": "elvebredd-initialPets-auto-generated",
   "sourceUrl": "https://elvebredd.com/adopt-me-calculator",
-  "itemCount": 3367,
+  "itemCount": 3371,
   "valueScale": "elvebredd-display-values",
   "variantKeys": {
     "NP": "No Potion / Normal / Default no-potion value when exposed",
@@ -38,8 +38,8 @@
     "food": 88,
     "gifts": 67,
     "other": 28,
-    "pet wear": 933,
-    "pets": 761,
+    "pet wear": 936,
+    "pets": 762,
     "stickers": 365,
     "strollers": 102,
     "toys": 718,
@@ -692,6 +692,74 @@
         "status": "Ready",
         "rarity": "common",
         "image": "/images/pets/2025 Crown.png"
+      }
+    },
+    "2026 birthday butterfly": {
+      "displayName": "2026 Birthday Butterfly",
+      "category": "pets",
+      "source": "elvebredd",
+      "NP": 0.055,
+      "F": 0.25,
+      "R": 0.25,
+      "FR": 0.055,
+      "N": 0.875,
+      "NF": 0.6,
+      "NR": 0.6,
+      "NFR": 0.875,
+      "M": 2.9,
+      "MF": 2.15,
+      "MR": 2.15,
+      "MFR": 2.9,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "NP": "elvebredd:rvalue - nopotion",
+          "F": "elvebredd:rvalue - fly",
+          "R": "elvebredd:rvalue - ride",
+          "FR": "elvebredd:rvalue",
+          "N": "elvebredd:nvalue",
+          "NF": "elvebredd:nvalue - fly",
+          "NR": "elvebredd:nvalue - ride",
+          "NFR": "elvebredd:nvalue - fly ride",
+          "M": "elvebredd:mvalue",
+          "MF": "elvebredd:mvalue - fly",
+          "MR": "elvebredd:mvalue - ride",
+          "MFR": "elvebredd:mvalue - fly ride"
+        },
+        "confidence": {
+          "NP": "direct",
+          "F": "direct",
+          "R": "direct",
+          "FR": "direct",
+          "N": "direct",
+          "NF": "direct",
+          "NR": "direct",
+          "NFR": "direct",
+          "M": "direct",
+          "MF": "direct",
+          "MR": "direct",
+          "MFR": "direct"
+        },
+        "originalRaw": {
+          "NP": 0.055,
+          "F": 0.25,
+          "R": 0.25,
+          "FR": 0.055,
+          "N": 0.875,
+          "NF": 0.6,
+          "NR": 0.6,
+          "NFR": 0.875,
+          "M": 2.9,
+          "MF": 2.15,
+          "MR": 2.15,
+          "MFR": 2.9
+        },
+        "notes": [],
+        "elvebreddId": 3430,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/2026 Birthday Butterfly.png"
       }
     },
     "2026 nye glasses": {
@@ -17283,6 +17351,43 @@
         "status": "Ready",
         "rarity": "rare",
         "image": "/images/pets/Buzz Off! Skateboard.png"
+      }
+    },
+    "buzzing honeypot hat": {
+      "displayName": "Buzzing Honeypot Hat",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0,
+      "F": 0,
+      "R": 0,
+      "FR": 100,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct"
+        },
+        "originalRaw": {
+          "FR": 100
+        },
+        "notes": [
+          "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
+        ],
+        "elvebreddId": 3431,
+        "status": "Ready",
+        "rarity": "none",
+        "image": "/images/pets/Buzzing Honeypot Hat.png"
       }
     },
     "cabbit": {
@@ -66030,6 +66135,43 @@
         "image": "/images/pets/Hippogriff.png"
       }
     },
+    "hive backpack": {
+      "displayName": "Hive Backpack",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0,
+      "F": 0,
+      "R": 0,
+      "FR": 53,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct"
+        },
+        "originalRaw": {
+          "FR": 53
+        },
+        "notes": [
+          "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
+        ],
+        "elvebreddId": 3432,
+        "status": "Ready",
+        "rarity": "none",
+        "image": "/images/pets/Hive Backpack.png"
+      }
+    },
     "holiday breadstick chew toy": {
       "displayName": "Holiday Breadstick Chew Toy",
       "category": "toys",
@@ -93942,7 +94084,7 @@
       "NP": 0,
       "F": 0,
       "R": 0,
-      "FR": 1440,
+      "FR": 2000,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -93961,7 +94103,7 @@
           "FR": "direct"
         },
         "originalRaw": {
-          "FR": 1440
+          "FR": 2000
         },
         "notes": [
           "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
@@ -104283,6 +104425,43 @@
         "image": "/images/pets/Queen Bee.png"
       }
     },
+    "queen bee slippers": {
+      "displayName": "Queen Bee Slippers",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0,
+      "F": 0,
+      "R": 0,
+      "FR": 40,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct"
+        },
+        "originalRaw": {
+          "FR": 40
+        },
+        "notes": [
+          "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
+        ],
+        "elvebreddId": 3433,
+        "status": "Ready",
+        "rarity": "none",
+        "image": "/images/pets/Queen Bee Slippers.png"
+      }
+    },
     "queen bee sticker": {
       "displayName": "Queen Bee Sticker",
       "category": "stickers",
@@ -105450,7 +105629,7 @@
       "NP": 0,
       "F": 0,
       "R": 0,
-      "FR": 1870,
+      "FR": 1900,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -105469,7 +105648,7 @@
           "FR": "direct"
         },
         "originalRaw": {
-          "FR": 1870
+          "FR": 1900
         },
         "notes": [
           "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
