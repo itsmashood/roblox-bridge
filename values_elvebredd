@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-08-12T07:27:28.595Z",
+  "updatedAt": "2026-08-12T13:14:04.048Z",
   "source": "elvebredd-initialPets-auto-generated",
   "sourceUrl": "https://elvebredd.com/adopt-me-calculator",
   "itemCount": 3372,
@@ -30602,10 +30602,10 @@
       "NF": 319,
       "NR": 319,
       "NFR": 320,
-      "M": 1310,
-      "MF": 1308.9,
-      "MR": 1308,
-      "MFR": 1310,
+      "M": 1250,
+      "MF": 1248.9,
+      "MR": 1248,
+      "MFR": 1250,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -30646,10 +30646,10 @@
           "NF": 319,
           "NR": 319,
           "NFR": 320,
-          "M": 1310,
-          "MF": 1308.9,
-          "MR": 1308,
-          "MFR": 1310
+          "M": 1250,
+          "MF": 1248.9,
+          "MR": 1248,
+          "MFR": 1250
         },
         "notes": [],
         "elvebreddId": 2552,
