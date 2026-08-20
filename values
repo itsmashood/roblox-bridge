@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "updatedAt": "2026-08-19T18:35:40.663Z",
+  "updatedAt": "2026-08-20T01:15:12.340Z",
   "source": "amvgg-auto-generated-with-manual-category-multipliers",
   "sourceUrls": [
     "https://amvgg.com/calculator?_rsc=19zvn",
@@ -15213,7 +15213,7 @@
         "noPotionNeon": null,
         "neonFly": null,
         "neonRide": null,
-        "mega": "Medium",
+        "mega": "Low",
         "noPotionMega": null,
         "megaFly": null,
         "megaRide": null
@@ -40263,7 +40263,7 @@
         "noPotionNeon": "Low",
         "neonFly": "Low",
         "neonRide": "Low",
-        "mega": "Medium",
+        "mega": "Low",
         "noPotionMega": "Low",
         "megaFly": "Low",
         "megaRide": "Low"
@@ -43235,7 +43235,7 @@
         "noPotionNeon": null,
         "neonFly": null,
         "neonRide": null,
-        "mega": "Medium",
+        "mega": "Low",
         "noPotionMega": null,
         "megaFly": null,
         "megaRide": null
@@ -49447,7 +49447,7 @@
         "noPotionNeon": null,
         "neonFly": null,
         "neonRide": null,
-        "mega": "Medium",
+        "mega": "Low",
         "noPotionMega": null,
         "megaFly": null,
         "megaRide": null
@@ -56997,17 +56997,17 @@
       "NP": 0,
       "F": 0,
       "R": 0,
-      "FR": 0.3,
+      "FR": 0.285,
       "N": 0,
       "NF": 0,
       "NR": 0,
-      "NFR": 1.1,
+      "NFR": 0.975,
       "M": 0,
       "MF": 0,
       "MR": 0,
-      "MFR": 4.3,
+      "MFR": 3.65,
       "demand": {
-        "regular": "High",
+        "regular": "Medium",
         "noPotionRegular": null,
         "fly": null,
         "ride": null,
@@ -57067,15 +57067,15 @@
           "NP": null,
           "F": null,
           "R": null,
-          "FR": 0.3,
+          "FR": 0.285,
           "N": null,
           "NF": null,
           "NR": null,
-          "NFR": 1.1,
+          "NFR": 0.975,
           "M": null,
           "MF": null,
           "MR": null,
-          "MFR": 4.3
+          "MFR": 3.65
         }
       },
       "aliases": []
@@ -62417,7 +62417,7 @@
         "noPotionNeon": null,
         "neonFly": null,
         "neonRide": null,
-        "mega": "Medium",
+        "mega": "Low",
         "noPotionMega": null,
         "megaFly": null,
         "megaRide": null
