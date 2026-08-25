@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-08-25T06:51:57.163Z",
+  "updatedAt": "2026-08-25T12:51:07.316Z",
   "source": "elvebredd-initialPets-auto-generated",
   "sourceUrl": "https://elvebredd.com/adopt-me-calculator",
   "itemCount": 3377,
@@ -105901,7 +105901,7 @@
       "NP": 0,
       "F": 0,
       "R": 0,
-      "FR": 1930,
+      "FR": 1900,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -105920,7 +105920,7 @@
           "FR": "direct"
         },
         "originalRaw": {
-          "FR": 1930
+          "FR": 1900
         },
         "notes": [
           "NP was not exposed by Elvebredd for this item, so it is left as 0/unknown."
