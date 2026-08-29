@@ -4,13 +4,25 @@
   Fetches Elvebredd's public Adopt Me calculator page, extracts the embedded
   initialPets data, and writes a Xyneria-compatible `values` file.
 
+  Safety goals:
+    - Preserve the existing JSON shape used by current consumers.
+    - Never globally treat FR as NP.
+    - Only copy FR -> NP when the item is confidently identified as a non-pet.
+    - Keep the original FR value for backwards compatibility.
+    - Copy the donor value metadata so existing consumers still trust the value.
+    - Validate the new database against the previous database before replacing it.
+    - Write atomically so a failed run does not leave a partial database file.
+
   Run locally:
     node update_elvebredd_values.js
 
   Env options:
     ELVEBREDD_URL=https://elvebredd.com/adopt-me-calculator
-    OUT_FILE=values
+    OUT_FILE=values_elvebredd
     MIN_ITEMS=100
+    MIN_PREVIOUS_ITEM_RATIO=0.90
+    MIN_PREVIOUS_OVERLAP_RATIO=0.85
+    MIN_PREVIOUS_NONZERO_RATIO=0.85
 
   No npm packages required.
 */
@@ -20,8 +32,115 @@ const fs = require("fs/promises");
 const ELVEBREDD_URL = process.env.ELVEBREDD_URL || "https://elvebredd.com/adopt-me-calculator";
 const OUT_FILE = process.env.OUT_FILE || "values_elvebredd";
 const MIN_ITEMS = Number(process.env.MIN_ITEMS || 100);
+const MIN_PREVIOUS_ITEM_RATIO = Number(process.env.MIN_PREVIOUS_ITEM_RATIO || 0.90);
+const MIN_PREVIOUS_OVERLAP_RATIO = Number(process.env.MIN_PREVIOUS_OVERLAP_RATIO || 0.85);
+const MIN_PREVIOUS_NONZERO_RATIO = Number(process.env.MIN_PREVIOUS_NONZERO_RATIO || 0.85);
 
 const VARIANTS = ["NP", "F", "R", "FR", "N", "NF", "NR", "NFR", "M", "MF", "MR", "MFR"];
+
+const EXPLICIT_PET_TAGS = new Set([
+  "pet",
+  "pets"
+]);
+
+const EXPLICIT_NON_PET_TAGS = new Set([
+  "egg",
+  "eggs",
+  "food",
+  "foods",
+  "toy",
+  "toys",
+  "stroller",
+  "strollers",
+  "vehicle",
+  "vehicles",
+  "gift",
+  "gifts",
+  "pet wear",
+  "petwear",
+  "pet wears",
+  "wing",
+  "wings",
+  "potion",
+  "potions",
+  "accessory",
+  "accessories"
+]);
+
+const PET_SPECIFIC_VALUE_KEYS = [
+  "rvalue - nopotion",
+  "rvalue-nopotion",
+  "rvalue_nopotion",
+  "rvalue no potion",
+  "rvalue nopotion",
+  "npvalue",
+  "no potion",
+  "nopotion",
+  "noPotionValue",
+
+  "rvalue - fly",
+  "rvalue-fly",
+  "rvalue_fly",
+  "rvalue fly",
+  "flyvalue",
+  "fly value",
+
+  "rvalue - ride",
+  "rvalue-ride",
+  "rvalue_ride",
+  "rvalue ride",
+  "ridevalue",
+  "ride value",
+
+  "nvalue",
+  "neon value",
+  "neonValue",
+  "nvalue - fly",
+  "nvalue-fly",
+  "nvalue_fly",
+  "neon fly",
+  "neonFlyValue",
+  "nvalue - ride",
+  "nvalue-ride",
+  "nvalue_ride",
+  "neon ride",
+  "neonRideValue",
+  "nvalue - fly ride",
+  "nvalue - fr",
+  "nvalue-fr",
+  "nvalue_fr",
+  "neon fly ride",
+  "neonFlyRideValue",
+  "nfrvalue",
+
+  "mvalue",
+  "mega value",
+  "megaValue",
+  "mvalue - fly",
+  "mvalue-fly",
+  "mvalue_fly",
+  "mega fly",
+  "megaFlyValue",
+  "mvalue - ride",
+  "mvalue-ride",
+  "mvalue_ride",
+  "mega ride",
+  "megaRideValue",
+  "mvalue - fly ride",
+  "mvalue - fr",
+  "mvalue-fr",
+  "mvalue_fr",
+  "mega fly ride",
+  "megaFlyRideValue",
+  "mfrvalue"
+];
+
+const KNOWN_NON_PET_SENTINELS = [
+  "royal egg",
+  "retired egg",
+  "ride a pet potion forever",
+  "choosy potion"
+];
 
 function normalizeName(value) {
   return String(value || "")
@@ -166,6 +285,112 @@ function setVariant(item, variant, value, sourceKey, confidence) {
   return true;
 }
 
+function classificationTags(raw) {
+  const fields = [
+    raw.type,
+    raw.category,
+    raw.kind,
+    raw.itemType,
+    raw.item_type,
+    raw.categoryName,
+    raw.category_name,
+    raw.group,
+    raw.section
+  ];
+
+  return Array.from(
+    new Set(fields.map(normalizeName).filter(Boolean))
+  );
+}
+
+function hasPetSpecificValueEvidence(raw) {
+  return firstPositiveNumber(raw, PET_SPECIFIC_VALUE_KEYS) > 0;
+}
+
+function strongNonPetNameReason(displayName) {
+  const name = normalizeName(displayName);
+
+  // These are deliberately narrow. They fix known non-pet classes without
+  // trying to guess from broad words that could also appear in pet names.
+  if (name === "egg" || name.endsWith(" egg")) return "name is an egg item";
+  if (/(^| )potion( |$)/.test(name)) return "name contains standalone 'potion'";
+
+  return null;
+}
+
+function classifyElvebreddItem(raw, displayName) {
+  const tags = classificationTags(raw);
+  const explicitPetTag = tags.find(tag => EXPLICIT_PET_TAGS.has(tag)) || null;
+  const explicitNonPetTag = tags.find(tag => EXPLICIT_NON_PET_TAGS.has(tag)) || null;
+  const petSpecificValueEvidence = hasPetSpecificValueEvidence(raw);
+  const nameNonPetReason = strongNonPetNameReason(displayName);
+
+  // If the name is one of the narrow, known-safe non-pet patterns, only refuse
+  // to classify it if Elvebredd simultaneously exposes actual pet-only values.
+  if (nameNonPetReason) {
+    if (petSpecificValueEvidence) {
+      return {
+        kind: "unknown",
+        reason: `${nameNonPetReason}, but pet-specific value fields were also present`
+      };
+    }
+
+    return {
+      kind: "nonpet",
+      reason: nameNonPetReason
+    };
+  }
+
+  if (explicitNonPetTag) {
+    if (petSpecificValueEvidence) {
+      return {
+        kind: "unknown",
+        reason: `non-pet tag '${explicitNonPetTag}' conflicted with pet-specific value fields`
+      };
+    }
+
+    return {
+      kind: "nonpet",
+      reason: `explicit Elvebredd category/type '${explicitNonPetTag}'`
+    };
+  }
+
+  if (explicitPetTag || petSpecificValueEvidence) {
+    return {
+      kind: "pet",
+      reason: explicitPetTag
+        ? `explicit Elvebredd category/type '${explicitPetTag}'`
+        : "pet-specific potion/neon/mega value fields were present"
+    };
+  }
+
+  return {
+    kind: "unknown",
+    reason: tags.length > 0
+      ? `unrecognized category/type tag(s): ${tags.join(", ")}`
+      : "no reliable pet/non-pet classification evidence"
+  };
+}
+
+function copyVariantPreservingMetadata(item, targetVariant, donorVariant, note) {
+  if ((item[targetVariant] || 0) > 0) return false;
+  if ((item[donorVariant] || 0) <= 0) return false;
+
+  const donorSource = item.valueMeta.source[donorVariant] || `elvebredd:${donorVariant.toLowerCase()}`;
+  const donorConfidence = item.valueMeta.confidence[donorVariant] || "direct";
+  const donorOriginalRaw = Object.prototype.hasOwnProperty.call(item.valueMeta.originalRaw, donorVariant)
+    ? item.valueMeta.originalRaw[donorVariant]
+    : item[donorVariant];
+
+  item[targetVariant] = item[donorVariant];
+  item.valueMeta.source[targetVariant] = donorSource;
+  item.valueMeta.confidence[targetVariant] = donorConfidence;
+  item.valueMeta.originalRaw[targetVariant] = donorOriginalRaw;
+
+  if (note) item.valueMeta.notes.push(note);
+  return true;
+}
+
 function convertElvebreddItem(raw) {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
 
@@ -289,8 +514,27 @@ function convertElvebreddItem(raw) {
     }
   }
 
+  if (!foundAny) return null;
+
+  const classification = classifyElvebreddItem(raw, displayName);
+
+  // IMPORTANT: Elvebredd's ordinary `rvalue` is historically stored as FR by
+  // this database. For confirmed non-pets, that same regular/default value is
+  // also the value Xyneria needs when it asks for NP. We COPY it to NP; we do
+  // not move or delete FR, preserving backwards compatibility for consumers.
+  if ((item.NP || 0) <= 0 && (item.FR || 0) > 0 && classification.kind === "nonpet") {
+    copyVariantPreservingMetadata(
+      item,
+      "NP",
+      "FR",
+      `NP copied from Elvebredd's regular rvalue for confirmed non-pet (${classification.reason}). FR was preserved for backwards compatibility.`
+    );
+  }
+
   if ((item.NP || 0) <= 0 && (item.FR || 0) > 0) {
-    item.valueMeta.notes.push("NP was not exposed by Elvebredd for this item, so it is left as 0/unknown.");
+    item.valueMeta.notes.push(
+      `NP was not exposed by Elvebredd and was not inferred because this item was not confidently classified as a non-pet (${classification.reason}).`
+    );
   }
 
   if ((item.NFR || 0) <= 0 && (item.N || 0) > 0) {
@@ -300,8 +544,6 @@ function convertElvebreddItem(raw) {
   if ((item.MFR || 0) <= 0 && (item.M || 0) > 0) {
     item.valueMeta.notes.push("MFR was not exposed separately by Elvebredd for this item, so it is left as 0/unknown.");
   }
-
-  if (!foundAny) return null;
 
   return { key, item };
 }
@@ -468,6 +710,21 @@ function extractInitialPetsArraysFromText(text) {
   return arrays;
 }
 
+function cleanMergedNotes(item) {
+  if (!item || !item.valueMeta || !Array.isArray(item.valueMeta.notes)) return;
+
+  const notes = Array.from(new Set(item.valueMeta.notes));
+
+  // A duplicate raw entry may have first produced an "NP unknown" note and a
+  // later duplicate may provide or safely infer NP. Remove the stale warning.
+  item.valueMeta.notes = notes.filter(note => {
+    if ((item.NP || 0) > 0 && String(note).startsWith("NP was not exposed by Elvebredd")) {
+      return false;
+    }
+    return true;
+  });
+}
+
 function extractElvebreddItems(html) {
   const arrays = [];
 
@@ -501,9 +758,12 @@ function extractElvebreddItems(html) {
 
         existing.aliases = Array.from(new Set([...(existing.aliases || []), ...(converted.item.aliases || [])]));
         existing.valueMeta.notes = Array.from(new Set([...(existing.valueMeta.notes || []), ...(converted.item.valueMeta.notes || [])]));
+        cleanMergedNotes(existing);
       }
     }
   }
+
+  for (const item of map.values()) cleanMergedNotes(item);
 
   return map;
 }
@@ -537,8 +797,163 @@ function categoryCounts(items) {
   return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
 }
 
+function countPositiveVariantCells(items) {
+  let count = 0;
+
+  for (const item of Object.values(items || {})) {
+    for (const variant of VARIANTS) {
+      if (toNumber(item && item[variant]) > 0) count++;
+    }
+  }
+
+  return count;
+}
+
+function countNormalizedNonPetItems(items) {
+  let count = 0;
+
+  for (const item of Object.values(items || {})) {
+    const notes = item && item.valueMeta && Array.isArray(item.valueMeta.notes)
+      ? item.valueMeta.notes
+      : [];
+
+    if (notes.some(note => String(note).startsWith("NP copied from Elvebredd's regular rvalue for confirmed non-pet"))) {
+      count++;
+    }
+  }
+
+  return count;
+}
+
+async function readPreviousOutput() {
+  try {
+    const text = await fs.readFile(OUT_FILE, "utf8");
+    if (!text.trim()) {
+      throw new Error(`${OUT_FILE} exists but is empty.`);
+    }
+
+    const parsed = JSON.parse(text);
+    if (!parsed || typeof parsed !== "object" || !parsed.items || typeof parsed.items !== "object") {
+      throw new Error(`${OUT_FILE} exists but does not contain a valid items object.`);
+    }
+
+    return parsed;
+  } catch (error) {
+    if (error && error.code === "ENOENT") return null;
+    throw new Error(`Refusing to replace the existing database because it could not be read safely: ${error.message}`);
+  }
+}
+
+function validateRatio(name, value) {
+  if (!Number.isFinite(value) || value <= 0 || value > 1) {
+    throw new Error(`${name} must be a number greater than 0 and at most 1. Received: ${value}`);
+  }
+}
+
+function validateCandidate(output, previousOutput) {
+  if (!Number.isFinite(MIN_ITEMS) || MIN_ITEMS < 1) {
+    throw new Error(`MIN_ITEMS must be a positive number. Received: ${MIN_ITEMS}`);
+  }
+
+  validateRatio("MIN_PREVIOUS_ITEM_RATIO", MIN_PREVIOUS_ITEM_RATIO);
+  validateRatio("MIN_PREVIOUS_OVERLAP_RATIO", MIN_PREVIOUS_OVERLAP_RATIO);
+  validateRatio("MIN_PREVIOUS_NONZERO_RATIO", MIN_PREVIOUS_NONZERO_RATIO);
+
+  const items = output.items || {};
+  const keys = Object.keys(items);
+
+  if (keys.length < MIN_ITEMS) {
+    throw new Error(`Only extracted ${keys.length} item(s). Expected at least ${MIN_ITEMS}. Elvebredd page format may have changed.`);
+  }
+
+  const shadow = items["shadow dragon"];
+  if (!shadow) {
+    throw new Error("Safety check failed: Shadow Dragon is missing from the generated database.");
+  }
+
+  const shadowHasRegularValue = ["NP", "F", "R", "FR"].some(variant => toNumber(shadow[variant]) > 0);
+  if (!shadowHasRegularValue) {
+    throw new Error("Safety check failed: Shadow Dragon has no positive regular value.");
+  }
+
+  for (const key of KNOWN_NON_PET_SENTINELS) {
+    const item = items[key];
+    if (!item) continue;
+
+    if (toNumber(item.FR) > 0 && toNumber(item.NP) <= 0) {
+      throw new Error(`Safety check failed: known non-pet '${item.displayName || key}' still has FR but no NP value.`);
+    }
+  }
+
+  if (!previousOutput || !previousOutput.items || typeof previousOutput.items !== "object") {
+    return;
+  }
+
+  const previousItems = previousOutput.items;
+  const previousKeys = Object.keys(previousItems);
+  const previousCount = previousKeys.length;
+  const newCount = keys.length;
+
+  if (previousCount > 0) {
+    const itemRatio = newCount / previousCount;
+    if (itemRatio < MIN_PREVIOUS_ITEM_RATIO) {
+      throw new Error(
+        `Safety check failed: item count dropped from ${previousCount} to ${newCount} ` +
+        `(${(itemRatio * 100).toFixed(2)}% of previous; minimum ${(MIN_PREVIOUS_ITEM_RATIO * 100).toFixed(2)}%).`
+      );
+    }
+
+    let overlap = 0;
+    for (const key of previousKeys) {
+      if (Object.prototype.hasOwnProperty.call(items, key)) overlap++;
+    }
+
+    const overlapRatio = overlap / previousCount;
+    if (overlapRatio < MIN_PREVIOUS_OVERLAP_RATIO) {
+      throw new Error(
+        `Safety check failed: only ${overlap}/${previousCount} previous item keys remain ` +
+        `(${(overlapRatio * 100).toFixed(2)}%; minimum ${(MIN_PREVIOUS_OVERLAP_RATIO * 100).toFixed(2)}%).`
+      );
+    }
+  }
+
+  const previousPositiveCells = countPositiveVariantCells(previousItems);
+  const newPositiveCells = countPositiveVariantCells(items);
+
+  if (previousPositiveCells > 0) {
+    const nonzeroRatio = newPositiveCells / previousPositiveCells;
+    if (nonzeroRatio < MIN_PREVIOUS_NONZERO_RATIO) {
+      throw new Error(
+        `Safety check failed: positive value cells dropped from ${previousPositiveCells} to ${newPositiveCells} ` +
+        `(${(nonzeroRatio * 100).toFixed(2)}% of previous; minimum ${(MIN_PREVIOUS_NONZERO_RATIO * 100).toFixed(2)}%).`
+      );
+    }
+  }
+}
+
+async function writeAtomically(path, text) {
+  const tempPath = `${path}.tmp`;
+
+  await fs.writeFile(tempPath, text, "utf8");
+
+  try {
+    await fs.rename(tempPath, path);
+  } catch (error) {
+    try {
+      await fs.unlink(tempPath);
+    } catch (_) {
+      // Ignore cleanup failure; preserve the original database and surface the rename error.
+    }
+    throw error;
+  }
+}
+
 async function main() {
   console.log(`Fetching Elvebredd values from ${ELVEBREDD_URL}`);
+
+  // Read the current database before doing anything destructive. If the file
+  // exists but is corrupt/unreadable, abort instead of replacing it blindly.
+  const previousOutput = await readPreviousOutput();
 
   const html = await fetchPage(ELVEBREDD_URL);
   const itemMap = extractElvebreddItems(html);
@@ -584,28 +999,38 @@ async function main() {
     items
   };
 
-  if (sortedEntries.length < MIN_ITEMS) {
-    throw new Error(`Only extracted ${sortedEntries.length} item(s). Expected at least ${MIN_ITEMS}. Elvebredd page format may have changed.`);
-  }
+  validateCandidate(output, previousOutput);
 
-  await fs.writeFile(OUT_FILE, JSON.stringify(output, null, 2) + "\n");
+  const serialized = JSON.stringify(output, null, 2) + "\n";
+  await writeAtomically(OUT_FILE, serialized);
+
+  const normalizedNonPets = countNormalizedNonPetItems(items);
 
   console.log(`Wrote ${OUT_FILE} with ${sortedEntries.length} items.`);
+  console.log(`Safely copied regular rvalue into NP for ${normalizedNonPets} confirmed non-pet item(s).`);
 
   const shadow = items["shadow dragon"];
-  if (shadow) {
+  console.log(
+    "Shadow Dragon check:",
+    JSON.stringify({
+      NP: shadow.NP,
+      F: shadow.F,
+      R: shadow.R,
+      FR: shadow.FR,
+      N: shadow.N,
+      NFR: shadow.NFR,
+      M: shadow.M,
+      MFR: shadow.MFR
+    })
+  );
+
+  for (const key of KNOWN_NON_PET_SENTINELS) {
+    const item = items[key];
+    if (!item) continue;
+
     console.log(
-      "Shadow Dragon check:",
-      JSON.stringify({
-        NP: shadow.NP,
-        F: shadow.F,
-        R: shadow.R,
-        FR: shadow.FR,
-        N: shadow.N,
-        NFR: shadow.NFR,
-        M: shadow.M,
-        MFR: shadow.MFR
-      })
+      `Known non-pet check (${item.displayName || key}):`,
+      JSON.stringify({ NP: item.NP, FR: item.FR })
     );
   }
 }
