@@ -1,9 +1,9 @@
 {
   "version": 5,
-  "updatedAt": "2026-09-14T21:37:09.816Z",
+  "updatedAt": "2026-09-15T03:56:33.552Z",
   "source": "elvebredd-initialPets-auto-generated",
   "sourceUrl": "https://elvebredd.com/adopt-me-calculator",
-  "itemCount": 3390,
+  "itemCount": 3439,
   "valueScale": "elvebredd-display-values",
   "variantKeys": {
     "NP": "No Potion / Normal / Default no-potion value when exposed",
@@ -38,12 +38,12 @@
     "food": 88,
     "gifts": 67,
     "other": 28,
-    "pet wear": 936,
+    "pet wear": 955,
     "pets": 779,
     "stickers": 365,
-    "strollers": 102,
-    "toys": 718,
-    "vehicles": 268
+    "strollers": 103,
+    "toys": 744,
+    "vehicles": 271
   },
   "items": {
     "1 ribbon": {
@@ -1332,10 +1332,10 @@
       "displayName": "Abyss Propeller",
       "category": "toys",
       "source": "elvebredd",
-      "NP": 0.07,
+      "NP": 0.13,
       "F": 0,
       "R": 0,
-      "FR": 0.07,
+      "FR": 0.13,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -1356,8 +1356,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.07,
-          "NP": 0.07
+          "FR": 0.13,
+          "NP": 0.13
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
@@ -1551,6 +1551,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Ace Flag.png"
+      }
+    },
+    "ace flag 2023": {
+      "displayName": "Ace Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3487,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Ace Flag 2023.png"
       }
     },
     "ace goose sticker": {
@@ -2058,6 +2098,86 @@
         "image": "/images/pets/Aestus.png"
       }
     },
+    "aestus kite": {
+      "displayName": "Aestus Kite",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.1,
+      "F": 0,
+      "R": 0,
+      "FR": 0.1,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.1,
+          "NP": 0.1
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3457,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Aestus Kite.png"
+      }
+    },
+    "aestus mane": {
+      "displayName": "Aestus Mane",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.3,
+      "F": 0,
+      "R": 0,
+      "FR": 0.3,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.3,
+          "NP": 0.3
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3464,
+        "status": "Ready",
+        "rarity": "legendary",
+        "image": "/images/pets/Aestus Mane.png"
+      }
+    },
     "african bead necklace": {
       "displayName": "African Bead Necklace",
       "category": "pet wear",
@@ -2241,6 +2361,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Agender Flag.png"
+      }
+    },
+    "agender flag 2023": {
+      "displayName": "Agender Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3488,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Agender Flag 2023.png"
       }
     },
     "agender pride pin": {
@@ -4781,18 +4941,18 @@
       "displayName": "Arctic Dusk Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 3.75,
-      "F": 4.15,
-      "R": 4.1,
-      "FR": 3.75,
-      "N": 18,
-      "NF": 17.2,
-      "NR": 17.2,
-      "NFR": 18,
-      "M": 74,
-      "MF": 72.9,
-      "MR": 72,
-      "MFR": 74,
+      "NP": 4,
+      "F": 4.4,
+      "R": 4.35,
+      "FR": 4,
+      "N": 19,
+      "NF": 18.2,
+      "NR": 18.2,
+      "NFR": 19,
+      "M": 78,
+      "MF": 76.9,
+      "MR": 76,
+      "MFR": 78,
       "demand": {},
       "aliases": [
         "arctic dusk drag"
@@ -4827,18 +4987,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 3.75,
-          "F": 4.15,
-          "R": 4.1,
-          "FR": 3.75,
-          "N": 18,
-          "NF": 17.2,
-          "NR": 17.2,
-          "NFR": 18,
-          "M": 74,
-          "MF": 72.9,
-          "MR": 72,
-          "MFR": 74
+          "NP": 4,
+          "F": 4.4,
+          "R": 4.35,
+          "FR": 4,
+          "N": 19,
+          "NF": 18.2,
+          "NR": 18.2,
+          "NFR": 19,
+          "M": 78,
+          "MF": 76.9,
+          "MR": 76,
+          "MFR": 78
         },
         "notes": [],
         "elvebreddId": 2591,
@@ -5341,6 +5501,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Aromantic Flag.png"
+      }
+    },
+    "aromantic flag 2023": {
+      "displayName": "Aromantic Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3489,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Aromantic Flag 2023.png"
       }
     },
     "aromantic pride pin": {
@@ -6613,6 +6813,46 @@
         "status": "Ready",
         "rarity": "common",
         "image": "/images/pets/Baby Formula.png"
+      }
+    },
+    "back paddle": {
+      "displayName": "Back Paddle",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3478,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Back Paddle.png"
       }
     },
     "back pencil": {
@@ -10663,6 +10903,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Bi Flag.png"
+      }
+    },
+    "bi flag 2023": {
+      "displayName": "Bi Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3490,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Bi Flag 2023.png"
       }
     },
     "bi pride pin": {
@@ -17527,6 +17807,46 @@
         "image": "/images/pets/Burger Bun Hat.png"
       }
     },
+    "burger flipper": {
+      "displayName": "Burger Flipper",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.04,
+      "F": 0,
+      "R": 0,
+      "FR": 0.04,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.04,
+          "NP": 0.04
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3474,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Burger Flipper.png"
+      }
+    },
     "burger plushie": {
       "displayName": "Burger Plushie",
       "category": "toys",
@@ -18292,18 +18612,18 @@
       "displayName": "Cabbit",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 28,
-      "F": 28.5,
-      "R": 28.25,
-      "FR": 29.5,
-      "N": 73,
-      "NF": 72,
-      "NR": 72,
-      "NFR": 73,
-      "M": 286,
-      "MF": 284.9,
-      "MR": 284,
-      "MFR": 286,
+      "NP": 28.5,
+      "F": 29,
+      "R": 28.75,
+      "FR": 30,
+      "N": 74,
+      "NF": 73,
+      "NR": 73,
+      "NFR": 74,
+      "M": 290,
+      "MF": 288.9,
+      "MR": 288,
+      "MFR": 290,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -18336,18 +18656,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 28,
-          "F": 28.5,
-          "R": 28.25,
-          "FR": 29.5,
-          "N": 73,
-          "NF": 72,
-          "NR": 72,
-          "NFR": 73,
-          "M": 286,
-          "MF": 284.9,
-          "MR": 284,
-          "MFR": 286
+          "NP": 28.5,
+          "F": 29,
+          "R": 28.75,
+          "FR": 30,
+          "N": 74,
+          "NF": 73,
+          "NR": 73,
+          "NFR": 74,
+          "M": 290,
+          "MF": 288.9,
+          "MR": 288,
+          "MFR": 290
         },
         "notes": [],
         "elvebreddId": 675,
@@ -18391,6 +18711,46 @@
         "status": "Ready",
         "rarity": "ultra rare",
         "image": "/images/pets/Cabbit Sticker.png"
+      }
+    },
+    "cabin crew hat": {
+      "displayName": "Cabin Crew Hat",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.07,
+      "F": 0,
+      "R": 0,
+      "FR": 0.07,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.07,
+          "NP": 0.07
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3467,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Cabin Crew Hat.png"
       }
     },
     "cactus balloon": {
@@ -19093,6 +19453,46 @@
         "image": "/images/pets/Camera Hat.png"
       }
     },
+    "camp patch sash": {
+      "displayName": "Camp Patch Sash",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.04,
+      "F": 0,
+      "R": 0,
+      "FR": 0.04,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.04,
+          "NP": 0.04
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3472,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Camp Patch Sash.png"
+      }
+    },
     "camper s bench": {
       "displayName": "Camper's Bench",
       "category": "toys",
@@ -19568,6 +19968,46 @@
         "status": "Ready",
         "rarity": "legendary",
         "image": "/images/pets/Campfire Stories Mega Neon Paint.png"
+      }
+    },
+    "camping sandals": {
+      "displayName": "Camping Sandals",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3479,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Camping Sandals.png"
       }
     },
     "camping tent": {
@@ -23597,6 +24037,46 @@
         "image": "/images/pets/Cheese.png"
       }
     },
+    "cheese and lettuce collar": {
+      "displayName": "Cheese and Lettuce Collar",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.07,
+      "F": 0,
+      "R": 0,
+      "FR": 0.07,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.07,
+          "NP": 0.07
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3470,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Cheese and Lettuce Collar.png"
+      }
+    },
     "cheese hat": {
       "displayName": "Cheese Hat",
       "category": "pet wear",
@@ -25630,10 +26110,10 @@
       "displayName": "Chocolate Chip Bat Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 35.5,
-      "F": 36.35,
-      "R": 36,
-      "FR": 37.5,
+      "NP": 36,
+      "F": 36.85,
+      "R": 36.5,
+      "FR": 38,
       "N": 128,
       "NF": 127,
       "NR": 127,
@@ -25676,10 +26156,10 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 35.5,
-          "F": 36.35,
-          "R": 36,
-          "FR": 37.5,
+          "NP": 36,
+          "F": 36.85,
+          "R": 36.5,
+          "FR": 38,
           "N": 128,
           "NF": 127,
           "NR": 127,
@@ -27959,6 +28439,46 @@
         "image": "/images/pets/Cloud.png"
       }
     },
+    "cloud grappling hook": {
+      "displayName": "Cloud Grappling Hook",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.004,
+      "F": 0,
+      "R": 0,
+      "FR": 0.004,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.004,
+          "NP": 0.004
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3461,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Cloud Grappling Hook.png"
+      }
+    },
     "cloud wings": {
       "displayName": "Cloud Wings",
       "category": "pet wear",
@@ -28520,6 +29040,48 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Clubtail Dragonfly.png"
+      }
+    },
+    "clubtail dragonfly wings": {
+      "displayName": "Clubtail Dragonfly Wings",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.1,
+      "F": 0,
+      "R": 0,
+      "FR": 0.1,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [
+        "clubtail dragfly wings"
+      ],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.1,
+          "NP": 0.1
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3466,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Clubtail Dragonfly Wings.png"
       }
     },
     "clumpty": {
@@ -32409,14 +32971,14 @@
       "displayName": "Cryptid",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 185,
-      "F": 185.85,
-      "R": 185,
-      "FR": 187,
-      "N": 495,
-      "NF": 494,
-      "NR": 494,
-      "NFR": 495,
+      "NP": 183,
+      "F": 183.85,
+      "R": 183,
+      "FR": 185,
+      "N": 490,
+      "NF": 489,
+      "NR": 489,
+      "NFR": 490,
       "M": 1500,
       "MF": 1498.9,
       "MR": 1498,
@@ -32453,14 +33015,14 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 185,
-          "F": 185.85,
-          "R": 185,
-          "FR": 187,
-          "N": 495,
-          "NF": 494,
-          "NR": 494,
-          "NFR": 495,
+          "NP": 183,
+          "F": 183.85,
+          "R": 183,
+          "FR": 185,
+          "N": 490,
+          "NF": 489,
+          "NR": 489,
+          "NFR": 490,
           "M": 1500,
           "MF": 1498.9,
           "MR": 1498,
@@ -32825,10 +33387,10 @@
       "displayName": "Cupcake Sprinkle Wings",
       "category": "pet wear",
       "source": "elvebredd",
-      "NP": 0.1,
+      "NP": 0.3,
       "F": 0,
       "R": 0,
-      "FR": 0.1,
+      "FR": 0.3,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -32849,8 +33411,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.1,
-          "NP": 0.1
+          "FR": 0.3,
+          "NP": 0.3
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
@@ -33724,14 +34286,14 @@
       "F": 60.9,
       "R": 60.75,
       "FR": 62,
-      "N": 206,
-      "NF": 205.5,
-      "NR": 205.5,
-      "NFR": 206,
-      "M": 822,
-      "MF": 830,
-      "MR": 830,
-      "MFR": 822,
+      "N": 209,
+      "NF": 208.5,
+      "NR": 208.5,
+      "NFR": 209,
+      "M": 834,
+      "MF": 842,
+      "MR": 842,
+      "MFR": 834,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -33768,14 +34330,14 @@
           "F": 60.9,
           "R": 60.75,
           "FR": 62,
-          "N": 206,
-          "NF": 205.5,
-          "NR": 205.5,
-          "NFR": 206,
-          "M": 822,
-          "MF": 830,
-          "MR": 830,
-          "MFR": 822
+          "N": 209,
+          "NF": 208.5,
+          "NR": 208.5,
+          "NFR": 209,
+          "M": 834,
+          "MF": 842,
+          "MR": 842,
+          "MFR": 834
         },
         "notes": [],
         "elvebreddId": 2,
@@ -34714,6 +35276,46 @@
         "image": "/images/pets/Demi Flag.png"
       }
     },
+    "demi flag 2023": {
+      "displayName": "Demi Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3491,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Demi Flag 2023.png"
+      }
+    },
     "demi pride pin": {
       "displayName": "Demi Pride Pin",
       "category": "pet wear",
@@ -35602,18 +36204,18 @@
       "displayName": "Diamond Hummingbird",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 5,
-      "F": 5.35,
-      "R": 5.3,
-      "FR": 5,
-      "N": 23,
-      "NF": 22.2,
-      "NR": 22.2,
-      "NFR": 23,
-      "M": 96,
-      "MF": 94.9,
-      "MR": 94,
-      "MFR": 96,
+      "NP": 5.5,
+      "F": 5.85,
+      "R": 5.8,
+      "FR": 5.5,
+      "N": 25,
+      "NF": 24.2,
+      "NR": 24.2,
+      "NFR": 25,
+      "M": 104,
+      "MF": 102.9,
+      "MR": 102,
+      "MFR": 104,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -35646,18 +36248,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 5,
-          "F": 5.35,
-          "R": 5.3,
-          "FR": 5,
-          "N": 23,
-          "NF": 22.2,
-          "NR": 22.2,
-          "NFR": 23,
-          "M": 96,
-          "MF": 94.9,
-          "MR": 94,
-          "MFR": 96
+          "NP": 5.5,
+          "F": 5.85,
+          "R": 5.8,
+          "FR": 5.5,
+          "N": 25,
+          "NF": 24.2,
+          "NR": 24.2,
+          "NFR": 25,
+          "M": 104,
+          "MF": 102.9,
+          "MR": 102,
+          "MFR": 104
         },
         "notes": [],
         "elvebreddId": 179,
@@ -43628,6 +44230,46 @@
         "image": "/images/pets/Enby Flag.png"
       }
     },
+    "enby flag 2023": {
+      "displayName": "Enby Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3492,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Enby Flag 2023.png"
+      }
+    },
     "enby pride pin": {
       "displayName": "Enby Pride Pin",
       "category": "pet wear",
@@ -44749,18 +45391,18 @@
       "displayName": "Fairy Bat Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 21.5,
-      "F": 22.35,
-      "R": 22,
-      "FR": 23.5,
-      "N": 64.5,
-      "NF": 63.5,
-      "NR": 63.5,
-      "NFR": 64.5,
-      "M": 256,
-      "MF": 254.9,
-      "MR": 254,
-      "MFR": 256,
+      "NP": 22,
+      "F": 22.85,
+      "R": 22.5,
+      "FR": 24,
+      "N": 67,
+      "NF": 66,
+      "NR": 66,
+      "NFR": 67,
+      "M": 265,
+      "MF": 263.9,
+      "MR": 263,
+      "MFR": 265,
       "demand": {},
       "aliases": [
         "fairy bat drag"
@@ -44795,18 +45437,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 21.5,
-          "F": 22.35,
-          "R": 22,
-          "FR": 23.5,
-          "N": 64.5,
-          "NF": 63.5,
-          "NR": 63.5,
-          "NFR": 64.5,
-          "M": 256,
-          "MF": 254.9,
-          "MR": 254,
-          "MFR": 256
+          "NP": 22,
+          "F": 22.85,
+          "R": 22.5,
+          "FR": 24,
+          "N": 67,
+          "NF": 66,
+          "NR": 66,
+          "NFR": 67,
+          "M": 265,
+          "MF": 263.9,
+          "MR": 263,
+          "MFR": 265
         },
         "notes": [],
         "elvebreddId": 197,
@@ -45982,6 +46624,46 @@
         "status": "Ready",
         "rarity": "legendary",
         "image": "/images/pets/Farm Egg.png"
+      }
+    },
+    "fast food hat": {
+      "displayName": "Fast Food Hat",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3480,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Fast Food Hat.png"
       }
     },
     "feather": {
@@ -48514,6 +49196,86 @@
         "status": "Ready",
         "rarity": "rare",
         "image": "/images/pets/Fishers' Headdress.png"
+      }
+    },
+    "fishing bobber chew toy": {
+      "displayName": "Fishing Bobber Chew Toy",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.002,
+      "F": 0,
+      "R": 0,
+      "FR": 0.002,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.002,
+          "NP": 0.002
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3463,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Fishing Bobber Chew Toy.png"
+      }
+    },
+    "fishing bucket hat": {
+      "displayName": "Fishing Bucket Hat",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.07,
+      "F": 0,
+      "R": 0,
+      "FR": 0.07,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.07,
+          "NP": 0.07
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3468,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Fishing Bucket Hat.png"
       }
     },
     "fishing tackle grappling hook": {
@@ -53533,18 +54295,18 @@
       "displayName": "Frostbite Bear",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 42,
-      "F": 42.45,
-      "R": 42.4,
-      "FR": 42,
-      "N": 173,
-      "NF": 172,
-      "NR": 172,
-      "NFR": 173,
-      "M": 702,
-      "MF": 700.9,
-      "MR": 700,
-      "MFR": 702,
+      "NP": 43.5,
+      "F": 43.95,
+      "R": 43.9,
+      "FR": 43.5,
+      "N": 180,
+      "NF": 179,
+      "NR": 179,
+      "NFR": 180,
+      "M": 730,
+      "MF": 728.9,
+      "MR": 728,
+      "MFR": 730,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -53577,18 +54339,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 42,
-          "F": 42.45,
-          "R": 42.4,
-          "FR": 42,
-          "N": 173,
-          "NF": 172,
-          "NR": 172,
-          "NFR": 173,
-          "M": 702,
-          "MF": 700.9,
-          "MR": 700,
-          "MFR": 702
+          "NP": 43.5,
+          "F": 43.95,
+          "R": 43.9,
+          "FR": 43.5,
+          "N": 180,
+          "NF": 179,
+          "NR": 179,
+          "NFR": 180,
+          "M": 730,
+          "MF": 728.9,
+          "MR": 728,
+          "MFR": 730
         },
         "notes": [],
         "elvebreddId": 670,
@@ -53888,10 +54650,10 @@
       "displayName": "Frostclaw Plush",
       "category": "toys",
       "source": "elvebredd",
-      "NP": 0.07,
+      "NP": 0.075,
       "F": 0,
       "R": 0,
-      "FR": 0.07,
+      "FR": 0.075,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -53912,8 +54674,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.07,
-          "NP": 0.07
+          "FR": 0.075,
+          "NP": 0.075
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
@@ -55301,6 +56063,46 @@
         "image": "/images/pets/Gay Flag.png"
       }
     },
+    "gay flag 2023": {
+      "displayName": "Gay Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3493,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Gay Flag 2023.png"
+      }
+    },
     "gay man flag": {
       "displayName": "Gay Man Flag",
       "category": "toys",
@@ -55339,6 +56141,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Gay Man Flag.png"
+      }
+    },
+    "gay man flag 2023": {
+      "displayName": "Gay Man Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3494,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Gay Man Flag 2023.png"
       }
     },
     "gay man pride pin": {
@@ -55674,6 +56516,46 @@
         "image": "/images/pets/Gender Fluid Flag.png"
       }
     },
+    "gender fluid flag 2023": {
+      "displayName": "Gender Fluid Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3495,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Gender Fluid Flag 2023.png"
+      }
+    },
     "gender fluid ghost dog sticker": {
       "displayName": "Gender Fluid Ghost Dog Sticker",
       "category": "stickers",
@@ -55749,6 +56631,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Gender Queer Flag.png"
+      }
+    },
+    "gender queer flag 2023": {
+      "displayName": "Gender Queer Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3496,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Gender Queer Flag 2023.png"
       }
     },
     "gender queer pride pin": {
@@ -59782,6 +60704,86 @@
         "image": "/images/pets/Glyptodon Ducky.png"
       }
     },
+    "glyptodon s here helmet": {
+      "displayName": "Glyptodon's Here Helmet",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.025,
+      "F": 0,
+      "R": 0,
+      "FR": 0.025,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.025,
+          "NP": 0.025
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3477,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Glyptodon's Here Helmet.png"
+      }
+    },
+    "glyptodon shell shoes": {
+      "displayName": "Glyptodon Shell Shoes",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.045,
+      "F": 0,
+      "R": 0,
+      "FR": 0.045,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.045,
+          "NP": 0.045
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3471,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Glyptodon Shell Shoes.png"
+      }
+    },
     "glyptodon sticker": {
       "displayName": "Glyptodon Sticker",
       "category": "stickers",
@@ -59817,6 +60819,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Glyptodon Sticker.png"
+      }
+    },
+    "glyptodon van": {
+      "displayName": "Glyptodon Van",
+      "category": "vehicles",
+      "source": "elvebredd",
+      "NP": 0.15,
+      "F": 0,
+      "R": 0,
+      "FR": 0.15,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.15,
+          "NP": 0.15
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3484,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Glyptodon Van.png"
       }
     },
     "goat": {
@@ -63933,10 +64975,10 @@
       "displayName": "Grim Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 33,
-      "F": 33.45,
-      "R": 33.4,
-      "FR": 33,
+      "NP": 34,
+      "F": 34.45,
+      "R": 34.4,
+      "FR": 34,
       "N": 122,
       "NF": 121,
       "NR": 121,
@@ -63979,10 +65021,10 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 33,
-          "F": 33.45,
-          "R": 33.4,
-          "FR": 33,
+          "NP": 34,
+          "F": 34.45,
+          "R": 34.4,
+          "FR": 34,
           "N": 122,
           "NF": 121,
           "NR": 121,
@@ -66495,18 +67537,18 @@
       "displayName": "Halloween White Ghost Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 5.5,
-      "F": 5.9,
-      "R": 5.85,
-      "FR": 5.5,
-      "N": 25,
-      "NF": 24.2,
-      "NR": 24.2,
-      "NFR": 25,
-      "M": 100,
-      "MF": 98.9,
-      "MR": 98,
-      "MFR": 100,
+      "NP": 5.75,
+      "F": 6.15,
+      "R": 6.1,
+      "FR": 5.75,
+      "N": 26,
+      "NF": 25.2,
+      "NR": 25.2,
+      "NFR": 26,
+      "M": 104,
+      "MF": 102.9,
+      "MR": 102,
+      "MFR": 104,
       "demand": {},
       "aliases": [
         "halloween white ghost drag"
@@ -66541,18 +67583,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 5.5,
-          "F": 5.9,
-          "R": 5.85,
-          "FR": 5.5,
-          "N": 25,
-          "NF": 24.2,
-          "NR": 24.2,
-          "NFR": 25,
-          "M": 100,
-          "MF": 98.9,
-          "MR": 98,
-          "MFR": 100
+          "NP": 5.75,
+          "F": 6.15,
+          "R": 6.1,
+          "FR": 5.75,
+          "N": 26,
+          "NF": 25.2,
+          "NR": 25.2,
+          "NFR": 26,
+          "M": 104,
+          "MF": 102.9,
+          "MR": 102,
+          "MFR": 104
         },
         "notes": [],
         "elvebreddId": 220,
@@ -67731,6 +68773,46 @@
         "status": "Ready",
         "rarity": "ultra rare",
         "image": "/images/pets/Hare Sticker.png"
+      }
+    },
+    "harmonica": {
+      "displayName": "Harmonica",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.025,
+      "F": 0,
+      "R": 0,
+      "FR": 0.025,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.025,
+          "NP": 0.025
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3455,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Harmonica.png"
       }
     },
     "harp grappling hook": {
@@ -69141,18 +70223,18 @@
       "displayName": "Hedgehog",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 70.25,
-      "F": 70.65,
-      "R": 70.5,
-      "FR": 71.75,
-      "N": 263,
-      "NF": 264,
-      "NR": 264,
-      "NFR": 263,
-      "M": 1050,
-      "MF": 1060,
-      "MR": 1060,
-      "MFR": 1050,
+      "NP": 70.5,
+      "F": 70.9,
+      "R": 70.75,
+      "FR": 72,
+      "N": 266,
+      "NF": 267,
+      "NR": 267,
+      "NFR": 266,
+      "M": 1062,
+      "MF": 1072,
+      "MR": 1072,
+      "MFR": 1062,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -69185,18 +70267,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 70.25,
-          "F": 70.65,
-          "R": 70.5,
-          "FR": 71.75,
-          "N": 263,
-          "NF": 264,
-          "NR": 264,
-          "NFR": 263,
-          "M": 1050,
-          "MF": 1060,
-          "MR": 1060,
-          "MFR": 1050
+          "NP": 70.5,
+          "F": 70.9,
+          "R": 70.75,
+          "FR": 72,
+          "N": 266,
+          "NF": 267,
+          "NR": 267,
+          "NFR": 266,
+          "M": 1062,
+          "MF": 1072,
+          "MR": 1072,
+          "MFR": 1062
         },
         "notes": [],
         "elvebreddId": 0,
@@ -75333,6 +76415,46 @@
         "image": "/images/pets/Intersex Flag.png"
       }
     },
+    "intersex flag 2023": {
+      "displayName": "Intersex Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3497,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Intersex Flag 2023.png"
+      }
+    },
     "intersex pride pin": {
       "displayName": "Intersex Pride Pin",
       "category": "pet wear",
@@ -76348,14 +77470,14 @@
       "displayName": "Jekyll Hydra",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 101,
-      "F": 101.25,
-      "R": 101.25,
-      "FR": 102,
-      "N": 261,
-      "NF": 260,
-      "NR": 260,
-      "NFR": 261,
+      "NP": 103,
+      "F": 103.25,
+      "R": 103.25,
+      "FR": 104,
+      "N": 262,
+      "NF": 261,
+      "NR": 261,
+      "NFR": 262,
       "M": 995,
       "MF": 993.9,
       "MR": 993,
@@ -76392,14 +77514,14 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 101,
-          "F": 101.25,
-          "R": 101.25,
-          "FR": 102,
-          "N": 261,
-          "NF": 260,
-          "NR": 260,
-          "NFR": 261,
+          "NP": 103,
+          "F": 103.25,
+          "R": 103.25,
+          "FR": 104,
+          "N": 262,
+          "NF": 261,
+          "NR": 261,
+          "NFR": 262,
           "M": 995,
           "MF": 993.9,
           "MR": 993,
@@ -76983,18 +78105,18 @@
       "displayName": "Jousting Horse",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 10,
-      "F": 10.45,
-      "R": 10.4,
-      "FR": 10,
-      "N": 43,
-      "NF": 42.2,
-      "NR": 42.2,
-      "NFR": 43,
-      "M": 174,
-      "MF": 172.9,
-      "MR": 172,
-      "MFR": 174,
+      "NP": 9.5,
+      "F": 9.95,
+      "R": 9.9,
+      "FR": 9.5,
+      "N": 42,
+      "NF": 41.2,
+      "NR": 41.2,
+      "NFR": 42,
+      "M": 170,
+      "MF": 168.9,
+      "MR": 168,
+      "MFR": 170,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -77027,18 +78149,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 10,
-          "F": 10.45,
-          "R": 10.4,
-          "FR": 10,
-          "N": 43,
-          "NF": 42.2,
-          "NR": 42.2,
-          "NFR": 43,
-          "M": 174,
-          "MF": 172.9,
-          "MR": 172,
-          "MFR": 174
+          "NP": 9.5,
+          "F": 9.95,
+          "R": 9.9,
+          "FR": 9.5,
+          "N": 42,
+          "NF": 41.2,
+          "NR": 41.2,
+          "NFR": 42,
+          "M": 170,
+          "MF": 168.9,
+          "MR": 168,
+          "MFR": 170
         },
         "notes": [],
         "elvebreddId": 259,
@@ -78680,6 +79802,46 @@
         "status": "Ready",
         "rarity": "rare",
         "image": "/images/pets/Kelp Raider Sticker.png"
+      }
+    },
+    "ketchup and mustard glasses": {
+      "displayName": "Ketchup and Mustard Glasses",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.04,
+      "F": 0,
+      "R": 0,
+      "FR": 0.04,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.04,
+          "NP": 0.04
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3473,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Ketchup and Mustard Glasses.png"
       }
     },
     "ketchup and mustard jetpack": {
@@ -82788,6 +83950,46 @@
         "image": "/images/pets/Lesbian Flag.png"
       }
     },
+    "lesbian flag 2023": {
+      "displayName": "Lesbian Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3498,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Lesbian Flag 2023.png"
+      }
+    },
     "lesbian pride pin": {
       "displayName": "Lesbian Pride Pin",
       "category": "pet wear",
@@ -84768,6 +85970,46 @@
         "status": "Ready",
         "rarity": "rare",
         "image": "/images/pets/Lucky Coin Necklace.png"
+      }
+    },
+    "lucky glasses": {
+      "displayName": "Lucky Glasses",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3482,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Lucky Glasses.png"
       }
     },
     "luggage": {
@@ -96221,6 +97463,46 @@
         "image": "/images/pets/Oakee Box.png"
       }
     },
+    "oakee cap": {
+      "displayName": "Oakee Cap",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.07,
+      "F": 0,
+      "R": 0,
+      "FR": 0.07,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.07,
+          "NP": 0.07
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3469,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Oakee Cap.png"
+      }
+    },
     "oakee knight": {
       "displayName": "Oakee Knight",
       "category": "pets",
@@ -97061,6 +98343,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Omnisex Flag.png"
+      }
+    },
+    "omnisex flag 2023": {
+      "displayName": "Omnisex Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3499,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Omnisex Flag 2023.png"
       }
     },
     "omnisex peagasus sticker": {
@@ -98930,6 +100252,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Pan Flag.png"
+      }
+    },
+    "pan flag 2023": {
+      "displayName": "Pan Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3500,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Pan Flag 2023.png"
       }
     },
     "pan parrot sticker": {
@@ -101313,18 +102675,18 @@
       "displayName": "Peppermint Penguin",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 31,
-      "F": 31.5,
-      "R": 31.25,
-      "FR": 32.5,
-      "N": 126,
-      "NF": 125,
-      "NR": 125,
-      "NFR": 126,
-      "M": 500,
-      "MF": 498.9,
-      "MR": 498,
-      "MFR": 500,
+      "NP": 31.5,
+      "F": 32,
+      "R": 31.75,
+      "FR": 33,
+      "N": 129,
+      "NF": 128,
+      "NR": 128,
+      "NFR": 129,
+      "M": 512,
+      "MF": 510.9,
+      "MR": 510,
+      "MFR": 512,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -101357,18 +102719,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 31,
-          "F": 31.5,
-          "R": 31.25,
-          "FR": 32.5,
-          "N": 126,
-          "NF": 125,
-          "NR": 125,
-          "NFR": 126,
-          "M": 500,
-          "MF": 498.9,
-          "MR": 498,
-          "MFR": 500
+          "NP": 31.5,
+          "F": 32,
+          "R": 31.75,
+          "FR": 33,
+          "N": 129,
+          "NF": 128,
+          "NR": 128,
+          "NFR": 129,
+          "M": 512,
+          "MF": 510.9,
+          "MR": 510,
+          "MFR": 512
         },
         "notes": [],
         "elvebreddId": 6,
@@ -101628,6 +102990,46 @@
         "status": "Ready",
         "rarity": "legendary",
         "image": "/images/pets/Personal Controller.png"
+      }
+    },
+    "personal sheepdog car": {
+      "displayName": "Personal Sheepdog Car",
+      "category": "vehicles",
+      "source": "elvebredd",
+      "NP": 0.099,
+      "F": 0,
+      "R": 0,
+      "FR": 0.099,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.099,
+          "NP": 0.099
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3485,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Personal Sheepdog Car.png"
       }
     },
     "pet egg": {
@@ -104787,10 +106189,10 @@
       "displayName": "Plant Powered Roller Skates",
       "category": "vehicles",
       "source": "elvebredd",
-      "NP": 0.15,
+      "NP": 0.1,
       "F": 0,
       "R": 0,
-      "FR": 0.15,
+      "FR": 0.1,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -104811,8 +106213,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.15,
-          "NP": 0.15
+          "FR": 0.1,
+          "NP": 0.1
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
@@ -107445,6 +108847,46 @@
         "image": "/images/pets/Pride Flag.png"
       }
     },
+    "pride flag 2023": {
+      "displayName": "Pride Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3486,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Pride Flag 2023.png"
+      }
+    },
     "pride glasses": {
       "displayName": "Pride Glasses",
       "category": "pet wear",
@@ -110039,18 +111481,18 @@
       "displayName": "Queen Bee",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 2.65,
-      "F": 2.95,
-      "R": 2.95,
-      "FR": 2.65,
-      "N": 13.5,
-      "NF": 12.7,
-      "NR": 12.7,
-      "NFR": 13.5,
-      "M": 56,
-      "MF": 54.9,
-      "MR": 54,
-      "MFR": 56,
+      "NP": 3,
+      "F": 3.3,
+      "R": 3.3,
+      "FR": 3,
+      "N": 15,
+      "NF": 14.2,
+      "NR": 14.2,
+      "NFR": 15,
+      "M": 62,
+      "MF": 60.9,
+      "MR": 60,
+      "MFR": 62,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -110083,18 +111525,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 2.65,
-          "F": 2.95,
-          "R": 2.95,
-          "FR": 2.65,
-          "N": 13.5,
-          "NF": 12.7,
-          "NR": 12.7,
-          "NFR": 13.5,
-          "M": 56,
-          "MF": 54.9,
-          "MR": 54,
-          "MFR": 56
+          "NP": 3,
+          "F": 3.3,
+          "R": 3.3,
+          "FR": 3,
+          "N": 15,
+          "NF": 14.2,
+          "NR": 14.2,
+          "NFR": 15,
+          "M": 62,
+          "MF": 60.9,
+          "MR": 60,
+          "MFR": 62
         },
         "notes": [],
         "elvebreddId": 228,
@@ -116360,10 +117802,10 @@
       "displayName": "Robo Unicycle",
       "category": "vehicles",
       "source": "elvebredd",
-      "NP": 0.15,
+      "NP": 0.1,
       "F": 0,
       "R": 0,
-      "FR": 0.15,
+      "FR": 0.1,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -116384,8 +117826,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.15,
-          "NP": 0.15
+          "FR": 0.1,
+          "NP": 0.1
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
@@ -118956,6 +120398,46 @@
         "image": "/images/pets/Ruddy Duck.png"
       }
     },
+    "ruddy ducky waddler": {
+      "displayName": "Ruddy Ducky Waddler",
+      "category": "vehicles",
+      "source": "elvebredd",
+      "NP": 0.2,
+      "F": 0,
+      "R": 0,
+      "FR": 0.2,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.2,
+          "NP": 0.2
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3483,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Ruddy Ducky Waddler.png"
+      }
+    },
     "ruff": {
       "displayName": "Ruff",
       "category": "pet wear",
@@ -119036,6 +120518,86 @@
         "image": "/images/pets/S'mores Cookie.png"
       }
     },
+    "s mores earrings": {
+      "displayName": "S'mores Earrings",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.04,
+      "F": 0,
+      "R": 0,
+      "FR": 0.04,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.04,
+          "NP": 0.04
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3476,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/S'mores Earrings.png"
+      }
+    },
+    "s mores pogo stick": {
+      "displayName": "S'mores Pogo Stick",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.1,
+      "F": 0,
+      "R": 0,
+      "FR": 0.1,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.1,
+          "NP": 0.1
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3460,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/S'mores Pogo Stick.png"
+      }
+    },
     "s mores raccoon": {
       "displayName": "S'mores Raccoon",
       "category": "pets",
@@ -119102,6 +120664,46 @@
         "status": "Ready",
         "rarity": "ultra rare",
         "image": "/images/pets/S'mores Raccoon.png"
+      }
+    },
+    "s mores stroller": {
+      "displayName": "S'mores Stroller",
+      "category": "strollers",
+      "source": "elvebredd",
+      "NP": 0.09,
+      "F": 0,
+      "R": 0,
+      "FR": 0.09,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.09,
+          "NP": 0.09
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'strollers'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3453,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/S'mores Stroller.png"
       }
     },
     "sabertooth": {
@@ -123575,6 +125177,46 @@
         "image": "/images/pets/Sheeeeep.png"
       }
     },
+    "sheepdog army hair": {
+      "displayName": "Sheepdog Army Hair",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3481,
+        "status": "Ready",
+        "rarity": "common",
+        "image": "/images/pets/Sheepdog Army Hair.png"
+      }
+    },
     "sheepdog ducky": {
       "displayName": "Sheepdog Ducky",
       "category": "pets",
@@ -123641,6 +125283,46 @@
         "status": "Ready",
         "rarity": "common",
         "image": "/images/pets/Sheepdog Ducky.png"
+      }
+    },
+    "sheepdog fluff": {
+      "displayName": "Sheepdog Fluff",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.04,
+      "F": 0,
+      "R": 0,
+      "FR": 0.04,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.04,
+          "NP": 0.04
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3475,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Sheepdog Fluff.png"
       }
     },
     "sheriff hat": {
@@ -124172,6 +125854,46 @@
         "status": "Ready",
         "rarity": "uncommon",
         "image": "/images/pets/Shih Tzu.png"
+      }
+    },
+    "ship in a bottle throw toy": {
+      "displayName": "Ship in a Bottle Throw Toy",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.004,
+      "F": 0,
+      "R": 0,
+      "FR": 0.004,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.004,
+          "NP": 0.004
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3462,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Ship in a Bottle Throw Toy.png"
       }
     },
     "ship s mast pogo": {
@@ -125386,18 +127108,18 @@
       "displayName": "Silverback Gorilla",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 13.5,
-      "F": 13.95,
-      "R": 13.9,
-      "FR": 13.5,
-      "N": 52,
-      "NF": 51,
-      "NR": 51,
-      "NFR": 52,
-      "M": 198,
-      "MF": 196.9,
-      "MR": 196,
-      "MFR": 198,
+      "NP": 13,
+      "F": 13.45,
+      "R": 13.4,
+      "FR": 13,
+      "N": 51,
+      "NF": 50,
+      "NR": 50,
+      "NFR": 51,
+      "M": 194,
+      "MF": 192.9,
+      "MR": 192,
+      "MFR": 194,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -125430,18 +127152,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 13.5,
-          "F": 13.95,
-          "R": 13.9,
-          "FR": 13.5,
-          "N": 52,
-          "NF": 51,
-          "NR": 51,
-          "NFR": 52,
-          "M": 198,
-          "MF": 196.9,
-          "MR": 196,
-          "MFR": 198
+          "NP": 13,
+          "F": 13.45,
+          "R": 13.4,
+          "FR": 13,
+          "N": 51,
+          "NF": 50,
+          "NR": 50,
+          "NFR": 51,
+          "M": 194,
+          "MF": 192.9,
+          "MR": 192,
+          "MFR": 194
         },
         "notes": [],
         "elvebreddId": 2633,
@@ -134899,6 +136621,86 @@
         "image": "/images/pets/Storm Condor.png"
       }
     },
+    "storm condor kite": {
+      "displayName": "Storm Condor Kite",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.1,
+      "F": 0,
+      "R": 0,
+      "FR": 0.1,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.1,
+          "NP": 0.1
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3459,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Storm Condor Kite.png"
+      }
+    },
+    "stormy grappling hook": {
+      "displayName": "Stormy Grappling Hook",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.02,
+      "F": 0,
+      "R": 0,
+      "FR": 0.02,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.02,
+          "NP": 0.02
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3456,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Stormy Grappling Hook.png"
+      }
+    },
     "strawberry cake roll flying disc": {
       "displayName": "Strawberry Cake Roll Flying Disc",
       "category": "toys",
@@ -135531,18 +137333,18 @@
       "displayName": "Strawberry Shortcake Bat Dragon",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 36.5,
-      "F": 37.35,
-      "R": 37,
-      "FR": 38.5,
-      "N": 111,
-      "NF": 110,
-      "NR": 110,
-      "NFR": 111,
-      "M": 436,
-      "MF": 434.9,
-      "MR": 434,
-      "MFR": 436,
+      "NP": 37,
+      "F": 37.85,
+      "R": 37.5,
+      "FR": 39,
+      "N": 112.5,
+      "NF": 111.5,
+      "NR": 111.5,
+      "NFR": 112.5,
+      "M": 440,
+      "MF": 438.9,
+      "MR": 438,
+      "MFR": 440,
       "demand": {},
       "aliases": [
         "strawberry shortcake bat drag"
@@ -135577,18 +137379,18 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 36.5,
-          "F": 37.35,
-          "R": 37,
-          "FR": 38.5,
-          "N": 111,
-          "NF": 110,
-          "NR": 110,
-          "NFR": 111,
-          "M": 436,
-          "MF": 434.9,
-          "MR": 434,
-          "MFR": 436
+          "NP": 37,
+          "F": 37.85,
+          "R": 37.5,
+          "FR": 39,
+          "N": 112.5,
+          "NF": 111.5,
+          "NR": 111.5,
+          "NFR": 112.5,
+          "M": 440,
+          "MF": 438.9,
+          "MR": 438,
+          "MFR": 440
         },
         "notes": [],
         "elvebreddId": 189,
@@ -136442,6 +138244,46 @@
         "image": "/images/pets/Strongperson Barbell.png"
       }
     },
+    "stygian hang glider": {
+      "displayName": "Stygian Hang Glider",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.3,
+      "F": 0,
+      "R": 0,
+      "FR": 0.3,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.3,
+          "NP": 0.3
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3454,
+        "status": "Ready",
+        "rarity": "ultra rare",
+        "image": "/images/pets/Stygian Hang Glider.png"
+      }
+    },
     "stygian owl": {
       "displayName": "Stygian Owl",
       "category": "pets",
@@ -136508,6 +138350,86 @@
         "status": "Ready",
         "rarity": "ultra rare",
         "image": "/images/pets/Stygian Owl.png"
+      }
+    },
+    "stygian owl kite": {
+      "displayName": "Stygian Owl Kite",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.1,
+      "F": 0,
+      "R": 0,
+      "FR": 0.1,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.1,
+          "NP": 0.1
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3458,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Stygian Owl Kite.png"
+      }
+    },
+    "stygian owl wings": {
+      "displayName": "Stygian Owl Wings",
+      "category": "pet wear",
+      "source": "elvebredd",
+      "NP": 0.12,
+      "F": 0,
+      "R": 0,
+      "FR": 0.12,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.12,
+          "NP": 0.12
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'pet wear'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3465,
+        "status": "Ready",
+        "rarity": "rare",
+        "image": "/images/pets/Stygian Owl Wings.png"
       }
     },
     "stylish messenger bag": {
@@ -137864,10 +139786,10 @@
       "displayName": "Sunshine Chariot",
       "category": "vehicles",
       "source": "elvebredd",
-      "NP": 0.12,
+      "NP": 0.15,
       "F": 0,
       "R": 0,
-      "FR": 0.12,
+      "FR": 0.15,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -137888,8 +139810,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.12,
-          "NP": 0.12
+          "FR": 0.15,
+          "NP": 0.15
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'vehicles'). FR was preserved for backwards compatibility."
@@ -143165,6 +145087,46 @@
         "image": "/images/pets/Transgender Flag.png"
       }
     },
+    "transgender flag 2023": {
+      "displayName": "Transgender Flag 2023",
+      "category": "toys",
+      "source": "elvebredd",
+      "NP": 0.005,
+      "F": 0,
+      "R": 0,
+      "FR": 0.005,
+      "N": 0,
+      "NF": 0,
+      "NR": 0,
+      "NFR": 0,
+      "M": 0,
+      "MF": 0,
+      "MR": 0,
+      "MFR": 0,
+      "demand": {},
+      "aliases": [],
+      "valueMeta": {
+        "source": {
+          "FR": "elvebredd:rvalue",
+          "NP": "elvebredd:rvalue"
+        },
+        "confidence": {
+          "FR": "direct",
+          "NP": "direct"
+        },
+        "originalRaw": {
+          "FR": 0.005,
+          "NP": 0.005
+        },
+        "notes": [
+          "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
+        ],
+        "elvebreddId": 3501,
+        "status": "Ready",
+        "rarity": "uncommon",
+        "image": "/images/pets/Transgender Flag 2023.png"
+      }
+    },
     "translucent tea potion": {
       "displayName": "Translucent Tea Potion",
       "category": "other",
@@ -145734,14 +147696,14 @@
       "displayName": "Undead Jousting Horse",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 120,
-      "F": 120.25,
-      "R": 120.25,
-      "FR": 121,
-      "N": 322,
-      "NF": 321,
-      "NR": 321,
-      "NFR": 322,
+      "NP": 122,
+      "F": 122.25,
+      "R": 122.25,
+      "FR": 123,
+      "N": 324,
+      "NF": 323,
+      "NR": 323,
+      "NFR": 324,
       "M": 1135,
       "MF": 1133.9,
       "MR": 1133,
@@ -145778,14 +147740,14 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 120,
-          "F": 120.25,
-          "R": 120.25,
-          "FR": 121,
-          "N": 322,
-          "NF": 321,
-          "NR": 321,
-          "NFR": 322,
+          "NP": 122,
+          "F": 122.25,
+          "R": 122.25,
+          "FR": 123,
+          "N": 324,
+          "NF": 323,
+          "NR": 323,
+          "NFR": 324,
           "M": 1135,
           "MF": 1133.9,
           "MR": 1133,
@@ -150131,10 +152093,10 @@
       "displayName": "Werewolf",
       "category": "pets",
       "source": "elvebredd",
-      "NP": 31.5,
-      "F": 31.95,
-      "R": 31.9,
-      "FR": 31.5,
+      "NP": 32.5,
+      "F": 32.95,
+      "R": 32.9,
+      "FR": 32.5,
       "N": 105,
       "NF": 104,
       "NR": 104,
@@ -150175,10 +152137,10 @@
           "MFR": "direct"
         },
         "originalRaw": {
-          "NP": 31.5,
-          "F": 31.95,
-          "R": 31.9,
-          "FR": 31.5,
+          "NP": 32.5,
+          "F": 32.95,
+          "R": 32.9,
+          "FR": 32.5,
           "N": 105,
           "NF": 104,
           "NR": 104,
@@ -150436,10 +152398,10 @@
       "displayName": "Whip Grappling Hook",
       "category": "toys",
       "source": "elvebredd",
-      "NP": 0.01,
+      "NP": 0.02,
       "F": 0,
       "R": 0,
-      "FR": 0.01,
+      "FR": 0.02,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -150460,8 +152422,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 0.01,
-          "NP": 0.01
+          "FR": 0.02,
+          "NP": 0.02
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'toys'). FR was preserved for backwards compatibility."
