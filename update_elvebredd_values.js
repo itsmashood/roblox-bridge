@@ -25,6 +25,35 @@
     MIN_PREVIOUS_NONZERO_RATIO=0.85
 
   No npm packages required.
+
+  ---------------------------------------------------------------------------
+  FIX (this version): N / M mapping bug
+  ---------------------------------------------------------------------------
+  Elvebredd's convention (confirmed by the working rvalue/NP pair) is:
+    - the BARE key ("rvalue") holds the fully-potioned (Fly+Ride) value
+    - a SEPARATE "- nopotion" key holds the plain value
+
+  The N and M mappings previously did not follow this: they read the bare
+  "nvalue"/"mvalue" key directly into N/M, so N and M ended up holding the
+  neon-fly-ride / mega-fly-ride value instead of the plain neon/mega value.
+  This was confirmed against the live site on two pets (Poodle, Emberlight),
+  where the script's N/M matched the site's NFR/MFR badge value exactly.
+
+  Fixed by:
+    - N  now reads a "- nopotion" style key first (mirroring NP's key list)
+    - NFR now also accepts the bare "nvalue" key (mirroring FR's key list)
+    - Same pattern applied to M / MFR
+
+  CAVEAT: the exact spelling of Elvebredd's plain-neon/mega key
+  ("nvalue - nopotion", "mvalue - nopotion", etc.) is inferred from the
+  existing rvalue/NP naming convention, not confirmed against a live raw
+  payload. Before trusting this for real, log one raw neon/mega pet object
+  from a live run (e.g. temporarily add
+  `if (raw.name && /neon/i.test(displayName)) console.log(JSON.stringify(raw));`
+  inside convertElvebreddItem) and verify the actual key name matches one of
+  the strings below. If it doesn't, add the real key name to the top of the
+  relevant list.
+  ---------------------------------------------------------------------------
 */
 
 const fs = require("fs/promises");
@@ -95,6 +124,13 @@ const PET_SPECIFIC_VALUE_KEYS = [
   "nvalue",
   "neon value",
   "neonValue",
+  "nvalue - nopotion",
+  "nvalue-nopotion",
+  "nvalue_nopotion",
+  "nvalue no potion",
+  "nvalue nopotion",
+  "neon no potion",
+  "neonNoPotionValue",
   "nvalue - fly",
   "nvalue-fly",
   "nvalue_fly",
@@ -116,6 +152,13 @@ const PET_SPECIFIC_VALUE_KEYS = [
   "mvalue",
   "mega value",
   "megaValue",
+  "mvalue - nopotion",
+  "mvalue-nopotion",
+  "mvalue_nopotion",
+  "mvalue no potion",
+  "mvalue nopotion",
+  "mega no potion",
+  "megaNoPotionValue",
   "mvalue - fly",
   "mvalue-fly",
   "mvalue_fly",
@@ -445,10 +488,17 @@ function convertElvebreddItem(raw) {
       "value"
     ],
 
+    // FIX: was ["nvalue", "neon value", "neonValue"] — the bare "nvalue" key
+    // holds the FLY+RIDE (NFR) value on the live site, not the plain value.
+    // Now mirrors the NP key list pattern (a dedicated "- nopotion" key).
     N: [
-      "nvalue",
-      "neon value",
-      "neonValue"
+      "nvalue - nopotion",
+      "nvalue-nopotion",
+      "nvalue_nopotion",
+      "nvalue no potion",
+      "nvalue nopotion",
+      "neon no potion",
+      "neonNoPotionValue"
     ],
     NF: [
       "nvalue - fly",
@@ -464,7 +514,10 @@ function convertElvebreddItem(raw) {
       "neon ride",
       "neonRideValue"
     ],
+    // FIX: added bare "nvalue" as the first candidate — this is where the
+    // fly+ride value actually lives (mirrors how FR reads bare "rvalue").
     NFR: [
+      "nvalue",
       "nvalue - fly ride",
       "nvalue - fr",
       "nvalue-fr",
@@ -474,10 +527,15 @@ function convertElvebreddItem(raw) {
       "nfrvalue"
     ],
 
+    // FIX: was ["mvalue", "mega value", "megaValue"] — same issue as N above.
     M: [
-      "mvalue",
-      "mega value",
-      "megaValue"
+      "mvalue - nopotion",
+      "mvalue-nopotion",
+      "mvalue_nopotion",
+      "mvalue no potion",
+      "mvalue nopotion",
+      "mega no potion",
+      "megaNoPotionValue"
     ],
     MF: [
       "mvalue - fly",
@@ -493,7 +551,9 @@ function convertElvebreddItem(raw) {
       "mega ride",
       "megaRideValue"
     ],
+    // FIX: added bare "mvalue" as the first candidate, same reasoning as NFR.
     MFR: [
+      "mvalue",
       "mvalue - fly ride",
       "mvalue - fr",
       "mvalue-fr",
@@ -972,28 +1032,28 @@ async function main() {
       F: "Regular Fly-only value when exposed",
       R: "Regular Ride-only value when exposed",
       FR: "Regular/default Fly Ride value from rvalue",
-      N: "Neon value from nvalue",
+      N: "Neon value (plain, no fly/ride)",
       NF: "Neon Fly-only value when exposed",
       NR: "Neon Ride-only value when exposed",
-      NFR: "Neon Fly Ride value when exposed",
-      M: "Mega value from mvalue",
+      NFR: "Neon Fly Ride value from bare nvalue",
+      M: "Mega value (plain, no fly/ride)",
       MF: "Mega Fly-only value when exposed",
       MR: "Mega Ride-only value when exposed",
-      MFR: "Mega Fly Ride value when exposed"
+      MFR: "Mega Fly Ride value from bare mvalue"
     },
     fieldMapping: {
       NP: "rvalue - nopotion",
       F: "rvalue - fly",
       R: "rvalue - ride",
       FR: "rvalue",
-      N: "nvalue",
+      N: "nvalue - nopotion",
       NF: "nvalue - fly",
       NR: "nvalue - ride",
-      NFR: "nvalue - fly ride / nvalue - fr",
-      M: "mvalue",
+      NFR: "nvalue (bare) / nvalue - fly ride / nvalue - fr",
+      M: "mvalue - nopotion",
       MF: "mvalue - fly",
       MR: "mvalue - ride",
-      MFR: "mvalue - fly ride / mvalue - fr"
+      MFR: "mvalue (bare) / mvalue - fly ride / mvalue - fr"
     },
     categoryItemCounts: categoryCounts(Object.values(items)),
     items
