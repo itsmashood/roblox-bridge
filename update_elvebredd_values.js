@@ -478,14 +478,25 @@ function convertElvebreddItem(raw) {
       "ridevalue",
       "ride value"
     ],
+    // FIX: bare "rvalue" is unreliable — on some pets (e.g. Unicorn, Cat,
+    // Dog, Poodle) it equals the PLAIN/no-potion value, not the fly+ride
+    // value, even though on higher-tier pets (Shadow Dragon, Hedgehog) it
+    // happens to equal fly+ride. Since "rvalue" always exists, it was being
+    // matched first and the real "rvalue - fly ride" key was never reached.
+    // Now the explicit suffixed key is tried first; bare "rvalue" is kept
+    // only as a last-resort fallback.
     FR: [
-      "rvalue",
+      "rvalue - fly ride",
+      "rvalue - fr",
+      "rvalue-fr",
+      "rvalue_fr",
       "regular value",
       "regularValue",
       "frvalue",
       "fly ride",
       "flyride",
-      "value"
+      "value",
+      "rvalue"
     ],
 
     // FIX: was ["nvalue", "neon value", "neonValue"] — the bare "nvalue" key
@@ -514,17 +525,21 @@ function convertElvebreddItem(raw) {
       "neon ride",
       "neonRideValue"
     ],
-    // FIX: added bare "nvalue" as the first candidate — this is where the
-    // fly+ride value actually lives (mirrors how FR reads bare "rvalue").
+    // FIX: explicit suffixed key tried first, matching the same defensive
+    // pattern as FR — bare "nvalue" has tested reliable as the fly+ride
+    // value on every pet checked, but since bare "rvalue" turned out NOT to
+    // be reliable for the equivalent regular-value field on some pets
+    // (Unicorn, Cat, Dog, Poodle), bare "nvalue" is kept as a fallback only,
+    // not the primary source.
     NFR: [
-      "nvalue",
       "nvalue - fly ride",
       "nvalue - fr",
       "nvalue-fr",
       "nvalue_fr",
       "neon fly ride",
       "neonFlyRideValue",
-      "nfrvalue"
+      "nfrvalue",
+      "nvalue"
     ],
 
     // FIX: was ["mvalue", "mega value", "megaValue"] — same issue as N above.
