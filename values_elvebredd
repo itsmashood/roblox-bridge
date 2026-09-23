@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-09-23T16:20:47.528Z",
+  "updatedAt": "2026-09-23T21:14:52.957Z",
   "source": "elvebredd-initialPets-auto-generated",
   "sourceUrl": "https://elvebredd.com/adopt-me-calculator",
   "itemCount": 3448,
@@ -80970,10 +80970,10 @@
       "displayName": "Kitty Biscuit",
       "category": "food",
       "source": "elvebredd",
-      "NP": 1.5,
+      "NP": 1,
       "F": 0,
       "R": 0,
-      "FR": 1.5,
+      "FR": 1,
       "N": 0,
       "NF": 0,
       "NR": 0,
@@ -80994,8 +80994,8 @@
           "NP": "direct"
         },
         "originalRaw": {
-          "FR": 1.5,
-          "NP": 1.5
+          "FR": 1,
+          "NP": 1
         },
         "notes": [
           "NP copied from Elvebredd's regular rvalue for confirmed non-pet (explicit Elvebredd category/type 'food'). FR was preserved for backwards compatibility."
