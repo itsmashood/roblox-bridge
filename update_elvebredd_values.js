@@ -295,8 +295,8 @@ function hasPetSpecificValueEvidence(raw) {
 function strongNonPetNameReason(displayName) {
   const name = normalizeName(displayName);
 
-  // These are deliberately narrow. They fix known non-pet classes without
-  // trying to guess from broad words that could also appear in pet names.
+
+
   if (name === "egg" || name.endsWith(" egg")) return "name is an egg item";
   if (/(^| )potion( |$)/.test(name)) return "name contains standalone 'potion'";
 
@@ -420,13 +420,13 @@ function convertElvebreddItem(raw) {
       "ridevalue",
       "ride value"
     ],
-    // FIX: bare "rvalue" is unreliable — on some pets (e.g. Unicorn, Cat,
-    // Dog, Poodle) it equals the PLAIN/no-potion value, not the fly+ride
-    // value, even though on higher-tier pets (Shadow Dragon, Hedgehog) it
-    // happens to equal fly+ride. Since "rvalue" always exists, it was being
-    // matched first and the real "rvalue - fly ride" key was never reached.
-    // Now the explicit suffixed key is tried first; bare "rvalue" is kept
-    // only as a last-resort fallback.
+
+
+
+
+
+
+
     FR: [
       "rvalue - fly ride",
       "rvalue - fr",
@@ -441,9 +441,9 @@ function convertElvebreddItem(raw) {
       "rvalue"
     ],
 
-    // FIX: was ["nvalue", "neon value", "neonValue"] — the bare "nvalue" key
-    // holds the FLY+RIDE (NFR) value on the live site, not the plain value.
-    // Now mirrors the NP key list pattern (a dedicated "- nopotion" key).
+
+
+
     N: [
       "nvalue - nopotion",
       "nvalue-nopotion",
@@ -467,12 +467,12 @@ function convertElvebreddItem(raw) {
       "neon ride",
       "neonRideValue"
     ],
-    // FIX: explicit suffixed key tried first, matching the same defensive
-    // pattern as FR — bare "nvalue" has tested reliable as the fly+ride
-    // value on every pet checked, but since bare "rvalue" turned out NOT to
-    // be reliable for the equivalent regular-value field on some pets
-    // (Unicorn, Cat, Dog, Poodle), bare "nvalue" is kept as a fallback only,
-    // not the primary source.
+    // FIX: no idea what i did here
+
+
+
+
+
     NFR: [
       "nvalue - fly ride",
       "nvalue - fr",
@@ -484,7 +484,7 @@ function convertElvebreddItem(raw) {
       "nvalue"
     ],
 
-    // FIX: was ["mvalue", "mega value", "megaValue"] — same issue as N above.
+
     M: [
       "mvalue - nopotion",
       "mvalue-nopotion",
@@ -508,7 +508,7 @@ function convertElvebreddItem(raw) {
       "mega ride",
       "megaRideValue"
     ],
-    // FIX: added bare "mvalue" as the first candidate, same reasoning as NFR.
+
     MFR: [
       "mvalue",
       "mvalue - fly ride",
@@ -535,10 +535,6 @@ function convertElvebreddItem(raw) {
 
   const classification = classifyElvebreddItem(raw, displayName);
 
-  // IMPORTANT: Elvebredd's ordinary `rvalue` is historically stored as FR by
-  // this database. For confirmed non-pets, that same regular/default value is
-  // also the value Xyneria needs when it asks for NP. We COPY it to NP; we do
-  // not move or delete FR, preserving backwards compatibility for consumers.
   if ((item.NP || 0) <= 0 && (item.FR || 0) > 0 && classification.kind === "nonpet") {
     copyVariantPreservingMetadata(
       item,
@@ -732,8 +728,6 @@ function cleanMergedNotes(item) {
 
   const notes = Array.from(new Set(item.valueMeta.notes));
 
-  // A duplicate raw entry may have first produced an "NP unknown" note and a
-  // later duplicate may provide or safely infer NP. Remove the stale warning.
   item.valueMeta.notes = notes.filter(note => {
     if ((item.NP || 0) > 0 && String(note).startsWith("NP was not exposed by Elvebredd")) {
       return false;
