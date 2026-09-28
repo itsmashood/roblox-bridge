@@ -310,8 +310,8 @@ function classifyElvebreddItem(raw, displayName) {
   const petSpecificValueEvidence = hasPetSpecificValueEvidence(raw);
   const nameNonPetReason = strongNonPetNameReason(displayName);
 
-  // If the name is one of the narrow, known-safe non-pet patterns, only refuse
-  // to classify it if Elvebredd simultaneously exposes actual pet-only values.
+
+
   if (nameNonPetReason) {
     if (petSpecificValueEvidence) {
       return {
