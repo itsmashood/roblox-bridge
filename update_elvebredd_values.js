@@ -953,7 +953,7 @@ async function writeAtomically(path, text) {
     try {
       await fs.unlink(tempPath);
     } catch (_) {
-      // Ignore cleanup failure; preserve the original database and surface the rename error.
+
     }
     throw error;
   }
@@ -962,8 +962,8 @@ async function writeAtomically(path, text) {
 async function main() {
   console.log(`Fetching Elvebredd values from ${ELVEBREDD_URL}`);
 
-  // Read the current database before doing anything destructive. If the file
-  // exists but is corrupt/unreadable, abort instead of replacing it blindly.
+
+
   const previousOutput = await readPreviousOutput();
 
   const html = await fetchPage(ELVEBREDD_URL);
