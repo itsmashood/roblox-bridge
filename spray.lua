@@ -3802,6 +3802,210 @@ end
 refreshEggBtn.MouseButton1Click:Connect(RefreshEggStatus)
 pcall(RefreshEggStatus)
 
+local _HatchAnimations = nil
+local _HatchCloudValues = nil
+
+local function LoadOfficialHatchModules()
+    if not _HatchAnimations then
+        local ok, result = pcall(function()
+            local hatchFsys = require(ReplicatedStorage:WaitForChild("Fsys"))
+            return hatchFsys.load("new:HatchAnimations")
+        end)
+        if ok then
+            _HatchAnimations = result
+        else
+            return nil, nil, result
+        end
+    end
+
+    if not _HatchCloudValues then
+        pcall(function()
+            local hatchFsys = require(ReplicatedStorage:WaitForChild("Fsys"))
+            _HatchCloudValues = hatchFsys.load("CloudValues")
+        end)
+    end
+
+    return _HatchAnimations, _HatchCloudValues
+end
+
+local function NormalizeHatchRarity(petId)
+    local petInfo = (InventoryDB.pets and InventoryDB.pets[petId])
+        or (KindDB and KindDB[petId]) or {}
+    local rarity = tostring(petInfo.rarity or "common"):lower()
+    rarity = rarity:gsub("[%s%-]+", "_")
+
+    local valid = {
+        common = true,
+        uncommon = true,
+        rare = true,
+        ultra_rare = true,
+        legendary = true,
+    }
+
+    return valid[rarity] and rarity or "common"
+end
+
+local function GetLegendaryFakeoutRarity(cloudValues, rarity)
+    if rarity ~= "legendary" or not cloudValues then return nil end
+    if type(cloudValues.getValue) ~= "function" then return nil end
+
+    local ratioOK, ratio = pcall(function()
+        return cloudValues:getValue("effects", "hatchFakeoutRatio")
+    end)
+    local raritiesOK, rarities = pcall(function()
+        return cloudValues:getValue("effects", "hatchFakeoutRarities")
+    end)
+
+    if not ratioOK or type(ratio) ~= "number" or not raritiesOK
+        or type(rarities) ~= "table" or #rarities == 0 then
+        return nil
+    end
+
+    ratio = math.clamp(ratio, 0, 1)
+    if math.random() >= ratio then return nil end
+
+    return rarities[math.random(1, #rarities)]
+end
+
+local function PlayOfficialHatchAnimation(uid, eggEntry, petId)
+    local hatchAnimations, cloudValues, loadError = LoadOfficialHatchModules()
+    if not hatchAnimations or type(hatchAnimations.hatch) ~= "function" then
+        return false, "HatchAnimations unavailable: " .. tostring(loadError)
+    end
+
+    local hatchModel
+    local wrappers = ClientData.get("pet_char_wrappers") or {}
+    for _, wrapper in pairs(wrappers) do
+        if wrapper.pet_unique == uid then
+            hatchModel = wrapper.char
+            break
+        end
+    end
+
+    local spawnedEntry = SpawnedPets and SpawnedPets[uid]
+    if not hatchModel and spawnedEntry then
+        hatchModel = spawnedEntry.model
+    end
+
+    if not hatchModel or not hatchModel:IsA("Model") then
+        return false, "Equipped egg character model not found"
+    end
+
+    local sourcePetModel = hatchModel:FindFirstChild("PetModel", true)
+    if not sourcePetModel or not sourcePetModel:IsA("Model") then
+        return false, "Egg PetModel child not found"
+    end
+
+    local rarity = NormalizeHatchRarity(petId)
+    local fakeoutRarity = GetLegendaryFakeoutRarity(cloudValues, rarity)
+    DebugLog("Hatch: official animation rarity=" .. rarity
+        .. " fakeout=" .. tostring(fakeoutRarity))
+
+    local boundsOK, boundingCF = pcall(function()
+        return hatchAnimations.get_bounding_box(sourcePetModel)
+    end)
+    if not boundsOK or typeof(boundingCF) ~= "CFrame" then
+        return false, "Could not calculate egg model bounds: " .. tostring(boundingCF)
+    end
+
+    local cloneOK, hatchClone = pcall(function()
+        local clone = sourcePetModel:Clone()
+        local primary = clone.PrimaryPart
+            or clone:FindFirstChild("HumanoidRootPart", true)
+            or clone:FindFirstChildWhichIsA("BasePart", true)
+
+        if not primary or not primary:IsA("BasePart") then
+            clone:Destroy()
+            error("Cloned PetModel has no usable BasePart")
+        end
+
+        clone.PrimaryPart = primary
+        clone:PivotTo(sourcePetModel:GetPivot())
+        clone.Name = "Spray_OfficialHatch"
+        clone.Parent = workspace
+        return clone
+    end)
+
+    if not cloneOK or not hatchClone then
+        return false, "Could not prepare hatch model: " .. tostring(hatchClone)
+    end
+
+    local originalVisibility = {}
+    for _, part in ipairs(sourcePetModel:GetDescendants()) do
+        if part:IsA("BasePart") then
+            originalVisibility[part] = part.LocalTransparencyModifier
+            part.LocalTransparencyModifier = 1
+        end
+    end
+
+    local function restoreOriginalVisibility()
+        for part, oldValue in pairs(originalVisibility) do
+            if part and part.Parent then
+                part.LocalTransparencyModifier = oldValue
+            end
+        end
+    end
+
+    local revealReached = false
+    local animationOK, animationError = pcall(function()
+        -- The sixth argument enables the same stereo sound mode used for
+        -- the locally controlled pet in Adopt Me's own hatch effect callback.
+        hatchAnimations.hatch(
+            hatchClone,
+            boundingCF,
+            rarity,
+            fakeoutRarity,
+            function(revealCFrame)
+                revealReached = true
+                DebugLog("Hatch: official reveal reached at " .. tostring(revealCFrame))
+            end,
+            true
+        )
+    end)
+
+    if not animationOK then
+        restoreOriginalVisibility()
+        if hatchClone.Parent then hatchClone:Destroy() end
+        return false, "HatchAnimations.hatch failed: " .. tostring(animationError)
+    end
+
+    local timeout = (rarity == "legendary") and 12 or 8
+    local waited = 0
+    while not revealReached and waited < timeout do
+        task.wait(0.1)
+        waited = waited + 0.1
+        if not hatchClone.Parent and not revealReached then
+            break
+        end
+    end
+
+    if not revealReached then
+        restoreOriginalVisibility()
+        if hatchClone.Parent then hatchClone:Destroy() end
+        return false, "Official hatch reveal callback timed out"
+    end
+
+    -- Let the reveal fragments and distortion effects finish their first
+    -- cleanup window before removing the original fake egg character.
+    task.wait(2.5)
+
+    if spawnedEntry and spawnedEntry.model then
+        local unequipOK, unequipError = pcall(UnequipPet, eggEntry)
+        if not unequipOK then
+            DebugLog("Hatch: local egg unequip warning: " .. tostring(unequipError))
+        end
+    end
+
+    if hatchModel and hatchModel.Parent then
+        hatchModel:Destroy()
+    end
+
+    if SpawnedPets then SpawnedPets[uid] = nil end
+    if SpawnedItems then SpawnedItems[uid] = nil end
+
+    return true
+end
+
 local _hatchBusy = false
 hatchNowBtn.MouseButton1Click:Connect(function()
     if _hatchBusy then return end
@@ -3877,164 +4081,53 @@ hatchNowBtn.MouseButton1Click:Connect(function()
         if roll <= cumulative then chosenName = e[1]; break end
     end
     DebugLog("Hatch: rolled " .. chosenName)
-    pcall(function() OriginalRouterGet("ToolAPI/Unequip"):InvokeServer(uid) end)
-    task.wait(0.2)
-    local char = LocalPlayer.Character
-    local hatchModel = nil
-    local hatchDone = false
-    task.spawn(function()
-        if not char then hatchDone = true return end
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not hrp then hatchDone = true return end
+    local petId = FindPetId(chosenName)
+    if not petId then
+        DebugLog("Hatch: FindPetId nil for '" .. chosenName .. "'")
+        hatchNowBtn.Text = "❌ Pet not found"
+        hatchNowBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
+        task.wait(2)
+        _hatchBusy = false
+        hatchNowBtn.Text = "🥚 Hatch Now"
+        RefreshEggStatus()
+        return
+    end
 
-        -- Find the egg character model (p_u_105 in real game)
-        local wrappers = ClientData.get("pet_char_wrappers") or {}
-        for _, wrapper in pairs(wrappers) do
-            if wrapper.pet_unique == uid then hatchModel = wrapper.char; break end
-        end
-        if not hatchModel and SpawnedPets[uid] then hatchModel = SpawnedPets[uid].model end
-        local _DL = _G._DebugLog or DebugLog
-        _DL("Hatch: egg model = " .. tostring(hatchModel ~= nil))
+    -- Play the official Adopt Me hatch sequence on a clone of the egg's
+    -- internal PetModel. The original fake egg stays intact until the reveal.
+    local animationOK, animationError = PlayOfficialHatchAnimation(uid, eggEntry, petId)
+    if not animationOK then
+        DebugLog("Hatch: official animation failed: " .. tostring(animationError))
+        hatchNowBtn.Text = "❌ Animation failed"
+        hatchNowBtn.BackgroundColor3 = Color3.fromRGB(160, 40, 40)
+        task.wait(2)
+        _hatchBusy = false
+        hatchNowBtn.Text = "🥚 Hatch Now"
+        RefreshEggStatus()
+        return
+    end
 
-        -- Real game checks: IsDescendantOf(workspace), has HumanoidRootPart, has Humanoid
-        local eggHRP = hatchModel and hatchModel:FindFirstChild("HumanoidRootPart")
-        local eggHumanoid = hatchModel and hatchModel:FindFirstChild("Humanoid")
-        _DL("Hatch: eggHRP=" .. tostring(eggHRP ~= nil) .. " eggHumanoid=" .. tostring(eggHumanoid ~= nil))
-        if not hatchModel or not hatchModel:IsDescendantOf(workspace) or not eggHRP or not eggHumanoid then
-            _DL("Hatch: falling back to local player HRP")
-            eggHRP = hrp
-        end
-        _DL("Hatch: eggHRP pos=" .. tostring(eggHRP.Position))
-
-        -- Create anchor part at egg position for particles
-        local anchorPart = Instance.new("Part")
-        anchorPart.Size = Vector3.new(2, 2, 1)
-        anchorPart.Transparency = 1
-        anchorPart.CanCollide = false
-        anchorPart.Anchored = false
-        anchorPart.CFrame = eggHRP.CFrame
-        anchorPart.Parent = workspace
-        _DL("Hatch: anchorPart created at " .. tostring(anchorPart.Position))
-
-        -- Weld anchor to the egg HRP so it follows it
-        local weld = Instance.new("Weld")
-        weld.Part0 = eggHRP
-        weld.Part1 = anchorPart
-        weld.Parent = anchorPart
-
-        -- If egg model removed, anchor the part so particles don't fall
-        if hatchModel then
-            hatchModel.AncestryChanged:connect(function(_, p110)
-                if p110 == nil then
-                    anchorPart.Anchored = true
-                end
-            end)
-        end
-
-        -- Listen for PetHatched to swap weld to the new pet's HRP
-        local petHatchedConn
-        local ok, StreamingHelper = pcall(function()
-            return require(game.ReplicatedStorage:WaitForChild("Fsys")).load("new:StreamingHelper")
-        end)
-        if not ok then StreamingHelper = nil end
-        _DL("Hatch: StreamingHelper=" .. tostring(StreamingHelper ~= nil))
-        petHatchedConn = RouterClient.get_event("PetAPI/PetHatched").OnClientEvent:connect(function(p111, p112)
-            task.spawn(function()
-                local resolvedEgg, resolvedPet
-                if StreamingHelper then
-                    resolvedEgg, resolvedPet = StreamingHelper.await_many(5, p111, p112)
-                else
-                    resolvedEgg = typeof(p111) == "Instance" and p111 or nil
-                    resolvedPet = typeof(p112) == "Instance" and p112 or nil
-                end
-                _DL("Hatch: PetHatched fired resolvedEgg=" .. tostring(resolvedEgg ~= nil) .. " resolvedPet=" .. tostring(resolvedPet ~= nil))
-                if resolvedEgg and resolvedPet and resolvedEgg == hatchModel then
-                    local newHRP = resolvedPet:FindFirstChild("HumanoidRootPart")
-                    if newHRP then
-                        weld.Part0 = newHRP
-                        anchorPart.Anchored = false
-                        _DL("Hatch: weld swapped to new pet HRP")
-                    end
-                end
-            end)
-        end)
-
-        game:GetService("Debris"):AddItem(anchorPart, 15)
-
-        -- Clone all 4 Hatch particles onto attachment
-        local hatchFolder = game.ReplicatedStorage:WaitForChild("Resources", 10)
-            :WaitForChild("Particles", 10)
-            :WaitForChild("Hatch", 10)
-        _DL("Hatch: hatchFolder found=" .. tostring(hatchFolder ~= nil))
-
-        local att = Instance.new("Attachment")
-        att.Parent = anchorPart
-        local cloneCount = 0
-        for _, v117 in pairs(hatchFolder:GetChildren()) do
-            v117:clone().Parent = att
-            cloneCount = cloneCount + 1
-            _DL("Hatch: cloned " .. v117.Name)
-        end
-        _DL("Hatch: " .. cloneCount .. " emitters cloned, att has " .. #att:GetChildren())
-
-        -- Preload first
-        game:GetService("ContentProvider"):PreloadAsync({ att })
-        _DL("Hatch: preload done — FIRING NOW")
-
-        -- Real game: Enabled=true, wait(0.2), Enabled=false.
-        -- Sparkles (Rate 500) works fine with just Enabled.
-        -- Circles/Rays/Rings have low rates so we Emit 1s worth to ensure visibility.
-        for _, v118 in pairs(att:GetChildren()) do
-            if v118:IsA("ParticleEmitter") and v118.Rate < 100 then
-                local emitCount = math.ceil(v118.Rate * 1)
-                v118:Emit(emitCount)
-                _DL("Hatch: Emit " .. v118.Name .. " x" .. emitCount)
-            end
-            v118.Enabled = true
-        end
-        wait(0.2)
-        for _, v119 in pairs(att:GetChildren()) do
-            v119.Enabled = false
-        end
-        game:GetService("Debris"):AddItem(att, 10)
-        _DL("Hatch: particles fired and disabled")
-
-        task.delay(10, function()
-            petHatchedConn:Disconnect()
-        end)
-
-        wait(4)
-        _DL("Hatch: 4s done, cleaning up egg model")
-
-        if hatchModel and hatchModel.Parent then
-            for _, p in ipairs(hatchModel:GetDescendants()) do
-                if p:IsA("BasePart") then p.Transparency = 1 end
-            end
-            game:GetService("Debris"):AddItem(hatchModel, 1)
-            hatchModel = nil
-        end
-
-        _DL("Hatch: effect complete")
-        hatchDone = true
-    end)
-    -- Wait for effect to fully complete (real game waits the full 4s window)
-    local waited = 0
-    while not hatchDone and waited < 6 do task.wait(0.1); waited = waited + 0.1 end
-    set_thread_identity(2)
-    pcall(function()
+    -- Remove the fake egg from the local inventory after the visual reveal.
+    local oldIdentity = get_thread_identity and get_thread_identity() or 8
+    pcall(set_thread_identity, 2)
+    local removeOK, removeError = pcall(function()
         local currentInv = ClientData.get("inventory")
         if currentInv and currentInv.pets and currentInv.pets[uid] then
             local newPets = {}
-            for k, v in pairs(currentInv.pets) do if k ~= uid then newPets[k] = v end end
+            for k, v in pairs(currentInv.pets) do
+                if k ~= uid then newPets[k] = v end
+            end
             local newInv = {}
             for k, v in pairs(currentInv) do newInv[k] = v end
             newInv.pets = newPets
             ClientData.predict("inventory", newInv)
-            DebugLog("Hatch: removed egg from inventory")
+            DebugLog("Hatch: removed fake egg from local inventory")
         end
     end)
-    set_thread_identity(get_thread_identity and get_thread_identity() or 8)
-    local petId = FindPetId(chosenName)
+    pcall(set_thread_identity, oldIdentity)
+    if not removeOK then
+        DebugLog("Hatch: inventory cleanup warning: " .. tostring(removeError))
+    end
     if petId then
         local item = CreateInventoryItem(petId, "pets", {
             mega_neon = false, neon = false, flyable = false, rideable = false,
