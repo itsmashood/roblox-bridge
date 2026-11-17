@@ -3,6 +3,22 @@ if not (request or http_request or (syn and syn.request)) then while true do end
 
 version = "v1.9.1"
 print("RUN BEGIN: Xyneria X Patuxet Revival ".. version)
+
+local fpsCapWarningIssued = false
+local function safeSetFpsCap(cap)
+    if type(setfpscap) ~= "function" then
+        if not fpsCapWarningIssued then
+            warn("[House Helper] setfpscap unavailable in this executor; FPS cap will be skipped.")
+            fpsCapWarningIssued = true
+        end
+        return false
+    end
+    local ok, err = pcall(setfpscap, cap)
+    if not ok then
+        warn("[House Helper] Failed to set FPS cap: " .. tostring(err))
+    end
+    return ok
+end
 local TeleportService = game:GetService("TeleportService")
 local u0 = task.wait
 if game:IsLoaded() then else game.Loaded:Wait() end
@@ -2476,7 +2492,17 @@ else
     writefile(FILE_NAME, source) -- print("write file")
 end
 
-local library = loadstring(source)()
+local compiler, compileErr = loadstring(source)
+if type(compiler) ~= "function" then
+    error("[House Helper] UI library failed to compile (possibly an outdated SplixModified.lua cache): " .. tostring(compileErr), 0)
+end
+local uiOk, library = pcall(compiler)
+if not uiOk then
+    error("[House Helper] UI library failed to initialize: " .. tostring(library), 0)
+end
+if type(library) ~= "table" or type(library.new) ~= "function" then
+    error("[House Helper] UI library returned an invalid interface. Delete SplixModified.lua and retry.", 0)
+end
 
 local uiStyle = (function()
     local isMobile = valuesTbl["useCompactUI"][2] or UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
@@ -3031,7 +3057,7 @@ local setfpscapTextbox = fpsSection:textbox({
         end
         onValueChanged("fpscap", num)
         hintSent("FPS Cap set to: ".. num .." FPS", true)
-        setfpscap(num)
+        safeSetFpsCap(num)
     end
 })
 
@@ -3486,7 +3512,7 @@ settingsSection:button({name = "Reset All Settings", callback = function()
     onValueChanged("moveTime", 30)
     onValueChanged("repliesSource", DEFAULT_REPLIES_SOURCE)
     onValueChanged("fpscap", 60)
-    setfpscap(60)
+    safeSetFpsCap(60)
     setfpscapTextbox:set(60)
     onValueChanged("ignorebelowvalue", 1)
     ignorebelowvalueTextbox:set(1)
@@ -3606,31 +3632,7 @@ end
 u0()
 
 task.spawn(savePosition, backMain)
-setfpscap(valuesTbl["fpscap"][2] or 60)
+safeSetFpsCap(valuesTbl["fpscap"][2] or 60)
 
-    local executorName = "Unknown"
-    u0()
-    local success, name, version = pcall(identifyexecutor)
-    if success and name then
-        executorName = name .. " " .. tostring(version)
-    else
-        local success2, result2 = pcall(getexecutorname)
-        if success2 and result2 then
-            executorName = result2
-        end
-    end
-    
-    local sendDataWebhook =   (function(message)
-        local url = "https://discord.com/api/webhooks/0/0"
-        request({
-            Url = url,
-            Method = "POST",
-            Headers = {["Content-Type"] = "application/json"},
-            Body = game:GetService("HttpService"):JSONEncode({
-                content = message
-            })
-        })
-    end)
 
-    u0()
-    sendDataWebhook("```✅ [" ..os.date("%H:%M:%S").. "] Script executed by: " ..game.Players.LocalPlayer.Name.. " (" ..game.Players.LocalPlayer.UserId.. ") in " ..game.PlaceId.. " with ".. executorName .."```" ..'\n'.. "-# ".. gethwid() )
+print("[House Helper] Startup finished successfully.")
