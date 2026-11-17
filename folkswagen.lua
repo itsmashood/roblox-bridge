@@ -1,46 +1,8 @@
--- Xyneria x Patuxet House Helper -- Delta diagnostic edition
--- Uses the existing guarded source, with runtime stage logs and stack traces.
-local __stage = "preflight"
-local __names = {"getgenv", "loadstring", "request", "http_request", "firesignal", "getconnections", "getupvalues", "setfpscap", "gethwid", "isfile", "readfile", "writefile", "getexecutorname", "identifyexecutor"}
-print("[Xyneria/Delta] Executor compatibility check:")
-for _, name in ipairs(__names) do
-    local available = getfenv()[name]
-    print("[Xyneria/Delta] " .. name .. " = " .. type(available))
-end
-local function __traceback(err)
-    local msg = tostring(err)
-    if debug and type(debug.traceback) == "function" then
-        local ok, tb = pcall(debug.traceback, msg, 2)
-        if ok then return tb end
-    end
-    return msg
-end
-local function __main()
-if type(getgenv) ~= "function" then error("Delta missing getgenv", 0) end
-if not (type(request) == "function" or type(http_request) == "function" or (syn and type(syn.request) == "function")) then
-    error("Delta missing request/http_request", 0)
-end
+if not getgenv then while true do end end
+if not (request or http_request or (syn and syn.request)) then while true do end end
 
-version = "v1.9.1"
-__stage = "script started"
-print("[Xyneria/Delta] Script started")
+version = "v1.9.0"
 print("RUN BEGIN: Xyneria X Patuxet Revival ".. version)
-
-local fpsCapWarningIssued = false
-local function safeSetFpsCap(cap)
-    if type(setfpscap) ~= "function" then
-        if not fpsCapWarningIssued then
-            warn("[House Helper] setfpscap unavailable in this executor; FPS cap will be skipped.")
-            fpsCapWarningIssued = true
-        end
-        return false
-    end
-    local ok, err = pcall(setfpscap, cap)
-    if not ok then
-        warn("[House Helper] Failed to set FPS cap: " .. tostring(err))
-    end
-    return ok
-end
 local TeleportService = game:GetService("TeleportService")
 local u0 = task.wait
 if game:IsLoaded() then else game.Loaded:Wait() end
@@ -54,8 +16,6 @@ repeat
     end)
 until ClientData
 
-__stage = "ClientData module loaded"
-print("[Xyneria/Delta] ClientData module loaded")
 local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
 local found = false
 local plr = game.Players.LocalPlayer
@@ -106,8 +66,6 @@ local posOnJoin = character.HumanoidRootPart.Position
 -- humanoid:MoveTo(character.HumanoidRootPart.Position - Vector3.new(0, 0, 17))
 task.wait(0.3)
 
-__stage = "character and ToolApp ready"
-print("[Xyneria/Delta] Character and ToolApp ready")
 local VirtualUser = game:GetService("VirtualUser")
 plr.Idled:Connect(function()
     print("idle ended")
@@ -261,8 +219,7 @@ local valuesTbl = {
     ["hopAfterTrade"] = {nil, true},
     ["deleteall"] = {nil, false},
     ["fpscap"] = {nil, 60},
-    ["ignorebelowvalue"] = {nil, 0},
-    ["tradeHubActive"] = {nil, false}
+    ["ignorebelowvalue"] = {nil, 0}
 }
 
 local blacklist = {
@@ -320,8 +277,6 @@ local getFriendlyToHashedMapping = (function()
     return {}
 end)
 
-__stage = "mapping game remotes"
-print("[Xyneria/Delta] Mapping game remotes")
 local remotes = getFriendlyToHashedMapping()
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
@@ -419,7 +374,7 @@ task.spawn((function()
                 :WaitForChild(remotes["MsgAPI/DisplayServerMsg"])
                 .OnClientEvent,
             game:GetService("TextChatService").TextChannels.RBXGeneral,
-            "Xyneria x patuxet - House Helper - ".. version,
+            "PatX - House Helper - ".. version,
             nil
         ) task.wait(0.1)
         firesignal(
@@ -428,7 +383,7 @@ task.spawn((function()
                 :WaitForChild(remotes["MsgAPI/DisplayServerMsg"])
                 .OnClientEvent,
             game:GetService("TextChatService").TextChannels.RBXGeneral,
-            "In honour of patx & radia 💖",
+            "Thank you for using my script! 💖",
             nil
         ) task.wait(0.1)
         firesignal(
@@ -437,7 +392,7 @@ task.spawn((function()
                 :WaitForChild(remotes["MsgAPI/DisplayServerMsg"])
                 .OnClientEvent,
             game:GetService("TextChatService").TextChannels.RBXGeneral,
-            "@radiawow on discord for more info! https://discord.gg/esJzMFwTBV ",
+            "@radiawow on discord for more info! https://discord.gg/JdZm9KGsXG ",
             Color3.fromRGB(255, 0, 0)
         )
     end))
@@ -941,8 +896,6 @@ end
 hookRemotes()
 
 u0()
-__stage = "setting up house functionality"
-print("[Xyneria/Delta] Setting up house functionality")
 local getMagicDoor = (function()
     local CD = Fsys.load("ClientData")
     local data = CD.get_data()[plr.Name]
@@ -1264,353 +1217,22 @@ local autosend = (function()
     end
 end)
 
-local autoplacedoor
-do
-    -- Door placement logic (from version_with)
-    local player = plr
-    local function notify(title, content, duration)
-        print("[" .. tostring(title) .. "] " .. tostring(content))
-        pcall(hintSent, tostring(content), true)
-    end
-
-    local magicDoorLastAttemptAt = 0
-    local magicDoorUseInProgress = false
-    local magicDoorCachedUnique = nil
-    local MAGIC_DOOR_MIN_ATTEMPT_GAP = 1
-    local MAGIC_DOOR_MAX_CANDIDATES = 15
-
-local function getCurrentMagicDoorUniqueCandidates()
-    local fallbackMagicDoorUnique = "2_6678f337ff7742638cbd7f6deb5581a0"
-    local candidates = {}
-    local used = {}
-
-    local function addCandidate(value, source)
-        if #candidates >= MAGIC_DOOR_MAX_CANDIDATES then
-            return
-        end
-
-        local text = tostring(value or "")
-
-        if text == "" or #text < 8 then
-            return
-        end
-
-        local lowered = text:lower()
-        if lowered:find("magic", 1, true) or lowered:find("door", 1, true) then
-            return
-        end
-
-        if used[text] then
-            return
-        end
-
-        used[text] = true
-        table.insert(candidates, text)
-        print("[House Helper] Magic Door candidate:", text, "source:", tostring(source or "unknown"))
-    end
-
-    local function looksLikeMagicDoorText(value)
-        local text = tostring(value or ""):lower()
-        text = text:gsub("[_%-%s]+", " ")
-
-        return text:find("magic door", 1, true) ~= nil
-            or text:gsub("%s+", ""):find("magicdoor", 1, true) ~= nil
-            or (text:find("magic", 1, true) ~= nil and text:find("door", 1, true) ~= nil)
-    end
-
-    local function scanToolContainer(container, source)
-        if not container then
-            return
-        end
-
-        for _, child in ipairs(container:GetChildren()) do
-            if #candidates >= MAGIC_DOOR_MAX_CANDIDATES then
-                return
-            end
-
-            if child:IsA("Tool") and looksLikeMagicDoorText(child.Name) then
-                local unique = child:FindFirstChild("unique")
-                if unique and unique.Value then
-                    addCandidate(unique.Value, source)
-                end
-            end
+local autoplacedoor = (function()
+    while valuesTbl["autoplaceDoorActive"][2] do
+        if inTrade or NegotiationFrame.Parent.Visible then
+            task.wait(0.5)
+        else
+            game:GetService("ReplicatedStorage"):WaitForChild("API"):WaitForChild(remotes["ToolAPI/Equip"]):InvokeServer(currentDoor, {
+                use_sound_delay = false,
+                equip_as_last = false
+            })
+            task.wait(0.5)
+            local position = hrp.CFrame * CFrame.new(0, 0, -2.4) * CFrame.Angles(0, math.rad(180), 0)
+            game:GetService("ReplicatedStorage"):WaitForChild("API"):WaitForChild(remotes["PlaceableToolAPI/CreatePlaceable"]):InvokeServer(position - Vector3.new(0, 3.8, 0))
+            task.wait(valuesTbl["durationBetween"][2])
         end
     end
-
-    
-    scanToolContainer(player.Character, "character tool")
-    scanToolContainer(player:FindFirstChildOfClass("Backpack"), "backpack tool")
-
-    
-    if magicDoorCachedUnique then
-        addCandidate(magicDoorCachedUnique, "cached")
-    end
-
-    
-    if #candidates < MAGIC_DOOR_MAX_CANDIDATES then
-        local clientData = nil
-
-        pcall(function()
-            local clientModules = ReplicatedStorage:FindFirstChild("ClientModules")
-            local core = clientModules and clientModules:FindFirstChild("Core")
-            local clientDataModule = core and core:FindFirstChild("ClientData")
-
-            if clientDataModule then
-                clientData = require(clientDataModule)
-            end
-        end)
-
-        if type(clientData) == "table" and type(clientData.get) == "function" then
-            local ok, inventory = pcall(function()
-                return clientData.get("inventory")
-            end)
-
-            if ok and type(inventory) == "table" then
-                local scanCount = 0
-
-                local function scanContainer(container)
-                    if type(container) ~= "table" then
-                        return
-                    end
-
-                    for key, item in pairs(container) do
-                        scanCount += 1
-
-                        if scanCount > 5000 or #candidates >= MAGIC_DOOR_MAX_CANDIDATES then
-                            return
-                        end
-
-                        if type(item) == "table" then
-                            local itemText =
-                                tostring(item.kind or "") .. " " ..
-                                tostring(item.id or "") .. " " ..
-                                tostring(item.name or "") .. " " ..
-                                tostring(item.display_name or "") .. " " ..
-                                tostring(item.displayName or "")
-
-                            if looksLikeMagicDoorText(itemText) then
-                                addCandidate(key, "inventory key")
-
-                                if item.unique then
-                                    addCandidate(item.unique, "inventory unique")
-                                elseif item.unique_id then
-                                    addCandidate(item.unique_id, "inventory unique_id")
-                                elseif item.uniqueId then
-                                    addCandidate(item.uniqueId, "inventory uniqueId")
-                                end
-                            end
-                        end
-                    end
-                end
-
-                scanContainer(inventory.food)
-                scanContainer(inventory.toys)
-                scanContainer(inventory.gifts)
-                scanContainer(inventory.roleplay)
-                scanContainer(inventory.strollers)
-                scanContainer(inventory.vehicles)
-                scanContainer(inventory)
-            end
-        end
-    end
-
-    if currentDoor then
-        addCandidate(currentDoor, "patx door uid")
-    end
-
-    addCandidate(fallbackMagicDoorUnique, "old fallback")
-
-    return candidates
-end
-
-local function useMagicDoor()
-    if magicDoorUseInProgress then
-        warn("[House Helper] Magic Door attempt already running. Skipping duplicate call.")
-        return false
-    end
-
-    local now = os.clock()
-
-    if now - tonumber(magicDoorLastAttemptAt or 0) < MAGIC_DOOR_MIN_ATTEMPT_GAP then
-        warn("[House Helper] Magic Door cooldown active. Skipping to protect device.")
-        return false
-    end
-
-    magicDoorUseInProgress = true
-    magicDoorLastAttemptAt = now
-
-    local success = false
-
-    local ok, err = pcall(function()
-        local api = ReplicatedStorage:WaitForChild("API")
-
-        local equipRemote = api:FindFirstChild("ToolAPI/Equip")
-        local placeRemote = api:FindFirstChild("PlaceableToolAPI/CreatePlaceable")
-
-        if not equipRemote or not placeRemote then
-            notify("House Helper", "Magic Door remotes missing.", 3)
-            return
-        end
-
-        local function getCharacterParts()
-            local char = player.Character or player.CharacterAdded:Wait()
-            local root = char:WaitForChild("HumanoidRootPart", 10)
-
-            return char, root
-        end
-
-        local function findPlaceableTool(char)
-            if not char then
-                return nil
-            end
-
-            local directTool = char:FindFirstChild("PlaceableTool")
-
-            if directTool then
-                return directTool
-            end
-
-            for _, child in ipairs(char:GetChildren()) do
-                if child:IsA("Tool") then
-                    local unique = child:FindFirstChild("unique")
-
-                    if unique then
-                        return child
-                    end
-                end
-            end
-
-            return nil
-        end
-
-        local function waitForPlaceableTool(char, timeout)
-            local startedAt = os.clock()
-            local tool = findPlaceableTool(char)
-
-            while not tool and os.clock() - startedAt < timeout do
-                task.wait(0.15)
-                tool = findPlaceableTool(char)
-            end
-
-            return tool
-        end
-
-        local function equipMagicDoor(magicDoorUnique)
-            if not magicDoorUnique or tostring(magicDoorUnique) == "" then
-                return false
-            end
-
-            print("[House Helper] Trying Magic Door unique:", tostring(magicDoorUnique))
-
-            local equipOk, equipResult = pcall(function()
-                return equipRemote:InvokeServer(tostring(magicDoorUnique))
-            end)
-
-            if not equipOk or equipResult == false then
-                warn("[House Helper] Magic Door equip failed for unique:", tostring(magicDoorUnique), tostring(equipResult))
-                return false
-            end
-
-            magicDoorCachedUnique = tostring(magicDoorUnique)
-            return true
-        end
-
-        local function placeEquippedMagicDoor()
-            local char, root = getCharacterParts()
-
-            if not char or not root then
-                return false
-            end
-
-            local tool = waitForPlaceableTool(char, 2.5)
-
-            if not tool then
-                warn("[House Helper] Magic Door tool not found after equip.")
-                return false
-            end
-
-            local unique = tool:FindFirstChild("unique")
-
-            if not unique then
-                warn("[House Helper] Magic Door tool unique missing.")
-                return false
-            end
-
-            task.wait(0.25)
-
-            
-            local placePositions = {
-                CFrame.new(0, -3, -4),
-                CFrame.new(0, -2.5, -5)
-            }
-
-            for attempt, offset in ipairs(placePositions) do
-                local cf = root.CFrame * offset
-
-                local placeOk, placeResult = pcall(function()
-                    return placeRemote:InvokeServer(cf, {
-                        unique = unique.Value
-                    })
-                end)
-
-                if placeOk and placeResult ~= false then
-                    print("[House Helper] Magic Door placed on attempt", tostring(attempt))
-                    notify("House Helper", "Door placed", 2)
-                    return true
-                end
-
-                warn("[House Helper] Magic Door place attempt failed:", tostring(attempt), tostring(placeResult))
-                task.wait(0.5)
-            end
-
-            return false
-        end
-
-        local candidates = getCurrentMagicDoorUniqueCandidates()
-
-        if not candidates or #candidates == 0 then
-            notify("House Helper", "No Magic Door ID found on this account.", 3)
-            return
-        end
-
-        
-        for index, magicDoorUnique in ipairs(candidates) do
-            if index > MAGIC_DOOR_MAX_CANDIDATES then
-                break
-            end
-
-            if equipMagicDoor(magicDoorUnique) then
-                if placeEquippedMagicDoor() then
-                    success = true
-                    return
-                end
-            end
-
-            task.wait(0.75)
-        end
-
-        notify("House Helper", "Magic Door failed. Auto retry will wait.", 4)
-    end)
-
-    if not ok then
-        warn("[House Helper] Magic Door protected error:", err)
-    end
-
-    magicDoorUseInProgress = false
-    return success
-end
-
-    autoplacedoor = (function()
-        while valuesTbl["autoplaceDoorActive"][2] do
-            if inTrade or NegotiationFrame.Parent.Visible then
-                task.wait(0.5)
-            else
-                useMagicDoor()
-                task.wait(valuesTbl["durationBetween"][2])
-            end
-        end
-    end)
-end
+end)
 
 local puthouseonsale = (function()
     while valuesTbl["autoPutHouseOnSale"][2] do
@@ -1914,224 +1536,25 @@ local function tableToString(tbl, indent)
     result = result .. spaces .. "}"
     return result
 end
-local PathfindingService = game:GetService("PathfindingService")
-local WALK_TO_TIMEOUT = 15
-local WALK_TO_RADIUS = 4
-local walkToRevision = 0
-local humanizedMovementRunning = false
+-- print(posOnJoin.X,  valuesTbl["movetoPos"][2].X, posOnJoin.Y, valuesTbl["movetoPos"][2].Y, posOnJoin.Z, valuesTbl["movetoPos"][2].Z)
+local absPos = Vector3.new(posOnJoin.X - valuesTbl["movetoPos"][2].X, posOnJoin.Y - valuesTbl["movetoPos"][2].Y, posOnJoin.Z - valuesTbl["movetoPos"][2].Z)
 
-local function getSavedWalkToPosition()
-    local offset = valuesTbl["movetoPos"][2]
-    if type(offset) ~= "table" then
-        offset = {X = 0, Y = 0, Z = 17}
-    end
-    return posOnJoin - Vector3.new(
-        tonumber(offset.X) or 0,
-        tonumber(offset.Y) or 0,
-        tonumber(offset.Z) or 17
-    )
-end
-
-local function isMovementBlocked()
-    return inTrade or TradeState.Active or (NegotiationFrame.Parent and NegotiationFrame.Parent.Visible)
-end
-
-local function currentMovementParts()
-    local currentCharacter = plr.Character
-    if not currentCharacter then return nil end
-    local currentRoot = currentCharacter:FindFirstChild("HumanoidRootPart")
-    local currentHumanoid = currentCharacter:FindFirstChildOfClass("Humanoid")
-    if not currentRoot or not currentHumanoid or currentHumanoid.Health <= 0 then
-        return nil
-    end
-    return currentCharacter, currentRoot, currentHumanoid
-end
-
-local function canContinueWalking(char, revision)
-    return valuesTbl["humanizedmovementActive"][2]
-        and walkToRevision == revision
-        and plr.Character == char
-        and not isMovementBlocked()
-end
-
-local function closeEnough(a, b)
-    return (a - b).Magnitude <= WALK_TO_RADIUS
-end
-
-local function moveThroughWaypoint(char, root, hum, waypoint, deadline, revision)
-    local target = waypoint.Position
-    local lastPosition = root.Position
-    local lastProgressAt = time()
-    local lastCommandAt = 0
-    local lastJumpAt = 0
-
-    while time() < deadline and canContinueWalking(char, revision) and hum.Health > 0 do
-        if closeEnough(root.Position, target) then
-            return true
-        end
-
-        local now = time()
-        if (root.Position - lastPosition).Magnitude >= 0.75 then
-            lastProgressAt = now
-            lastPosition = root.Position
-        end
-
-        if now - lastCommandAt >= 1.5 then
-            hum:MoveTo(target)
-            lastCommandAt = now
-        end
-
-        local jumpRequired = waypoint.Action == Enum.PathWaypointAction.Jump
-            or target.Y > root.Position.Y + 2.5
-            or now - lastProgressAt > 1
-        if jumpRequired and now - lastJumpAt >= 0.8 then
-            hum.Jump = true
-            lastJumpAt = now
-        end
-
-        -- Recalculate a path when an obstacle prevents progress.
-        if now - lastProgressAt >= 2.5 then
-            return false
-        end
-        task.wait(0.12)
-    end
-
-    if not canContinueWalking(char, revision) and plr.Character == char and hum.Health > 0 then
-        hum:MoveTo(root.Position)
-    end
-    return closeEnough(root.Position, target)
-end
-
-local function walkToSavedPoint()
-    local char, root, hum = currentMovementParts()
-    if not char then return false end
-    local revision = walkToRevision
-    local destination = getSavedWalkToPosition()
-    local deadline = time() + WALK_TO_TIMEOUT
-
-    while time() < deadline and canContinueWalking(char, revision) and hum.Health > 0 do
-        if closeEnough(root.Position, destination) then
-            return true
-        end
-
-        local waypoints = nil
-        local pathOk, path = pcall(function()
-            local result = PathfindingService:CreatePath({
-                AgentRadius = 2,
-                AgentHeight = 5,
-                AgentCanJump = true,
-                WaypointSpacing = 4
-            })
-            result:ComputeAsync(root.Position, destination)
-            return result
-        end)
-
-        if pathOk and path and path.Status == Enum.PathStatus.Success then
-            waypoints = path:GetWaypoints()
-        end
-
-        if not waypoints or #waypoints < 2 then
-            waypoints = {{Position = destination, Action = Enum.PathWaypointAction.Walk}}
-        end
-
-        local startIndex = #waypoints > 1 and 2 or 1
-        local pathSucceeded = true
-        for i = startIndex, #waypoints do
-            if not canContinueWalking(char, revision) then
-                if plr.Character == char and hum.Health > 0 then hum:MoveTo(root.Position) end
-                return false
-            end
-            if not moveThroughWaypoint(char, root, hum, waypoints[i], deadline, revision) then
-                pathSucceeded = false
-                break
-            end
-            if closeEnough(root.Position, destination) then return true end
-        end
-        if pathSucceeded and closeEnough(root.Position, destination) then return true end
-
-        if time() < deadline then task.wait(0.15) end
-    end
-
-    -- The full 15 seconds belong to this single destination attempt, including retries.
-    -- Never teleport when movement was switched off, interrupted by a trade, or retargeted.
-    if not canContinueWalking(char, revision) or hum.Health <= 0 then
-        if plr.Character == char and hum.Health > 0 then hum:MoveTo(root.Position) end
-        return false
-    end
-    if closeEnough(root.Position, destination) then return true end
-
-    local teleportOk = pcall(function()
-        char:PivotTo(CFrame.new(destination + Vector3.new(0, 2.5, 0)) * root.CFrame.Rotation)
-    end)
-    if teleportOk then
-        task.wait(0.15)
-        if canContinueWalking(char, revision) and not closeEnough(root.Position, destination) then
-            teleportOk = pcall(function()
-                char:PivotTo(CFrame.new(destination + Vector3.new(0, 2.5, 0)) * root.CFrame.Rotation)
-            end)
-        end
-    end
-    if teleportOk and closeEnough(root.Position, destination) then
-        hintSent("Walk-To reached using 15s teleport fallback", true)
-        return true
-    end
-    return false
-end
-
-local function interruptibleMovementWait(seconds)
-    local finishAt = time() + math.max(0, tonumber(seconds) or 0)
-    while time() < finishAt do
-        if not valuesTbl["humanizedmovementActive"][2] or isMovementBlocked() then
-            return false
-        end
-        task.wait(math.min(0.25, finishAt - time()))
-    end
-    return true
-end
-
-local function HumanizedMovement()
-    if humanizedMovementRunning then return end
-    humanizedMovementRunning = true
-
-    while valuesTbl["humanizedmovementActive"][2] do
-        if isMovementBlocked() then
-            task.wait(0.35)
-        elseif walkToSavedPoint() then
-            -- Preserve the existing five small, timed movements before returning.
-            for i = 1, 5 do
-                if not interruptibleMovementWait((tonumber(valuesTbl["moveTime"][2]) or 30) / 1.2) then
-                    break
-                end
-                local char, root, hum = currentMovementParts()
-                if not char or isMovementBlocked() then break end
-
-                local wanderingPosition = root.Position + Vector3.new(math.random(-4, 4), 0, math.random(-4, 4))
-                hum:MoveTo(wanderingPosition)
-                local wanderStart = time()
-                local oldPosition = root.Position
-                while time() - wanderStart < 2 do
-                    if not valuesTbl["humanizedmovementActive"][2] or isMovementBlocked() or plr.Character ~= char then
-                        if plr.Character == char and hum.Health > 0 then hum:MoveTo(root.Position) end
-                        break
-                    end
-                    if closeEnough(root.Position, wanderingPosition) then break end
-                    if time() - wanderStart > 0.8 and (root.Position - oldPosition).Magnitude < 0.7 then
-                        hum.Jump = true
-                    end
-                    task.wait(0.15)
-                end
-            end
-            if valuesTbl["humanizedmovementActive"][2] and not isMovementBlocked() then
-                walkToSavedPoint()
-            end
-            task.wait(0.2)
+local HumanizedMovement = ((function() 
+	while valuesTbl["humanizedmovementActive"][2] do
+        if inTrade or NegotiationFrame.Parent.Visible then
+            task.wait(0.5)
         else
-            task.wait(0.35)
+            task.wait(1) -- print("begin cycle")
+	for i = 1, 5 do
+        local n = tonumber(valuesTbl["moveTime"][2]) task.wait(n / 1.2, n)
+        if not valuesTbl["humanizedmovementActive"][2] then return end
+        repeat task.wait(0.5) until inTrade == false or NegotiationFrame.Parent.Visible == false
+		humanoid:MoveTo(character.HumanoidRootPart.Position - Vector3.new(math.random(-4,4), 0, math.random(-4,4)))
+            end
+        humanoid:MoveTo(absPos) -- print("cycle ended")
         end
     end
-
-    humanizedMovementRunning = false
-end
+end))
 
 genv.onMinimizedChanged = function(state)
     onValueChanged("minimized", state)
@@ -2158,357 +1581,6 @@ local function deleteall()
     workspace.Interiors:Destroy() else hintSent("Interiors doesn't exist anymore, rejoin to enable this setting.") end
 end
 
---------------------------------------------------------------------------------
--- TRADE HUB
---------------------------------------------------------------------------------
-
-local function goToTradeHub()
-    local Players = game:GetService("Players")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-    local Player = Players.LocalPlayer
-    local PlayerGui = Player:WaitForChild("PlayerGui")
-    local API = ReplicatedStorage:WaitForChild("API")
-
-    if type(getconnections) ~= "function" then
-        return
-    end
-
-    if type(getupvalues) ~= "function" then
-        return
-    end
-
-    local ClientData = require(
-        ReplicatedStorage
-            :WaitForChild("ClientModules")
-            :WaitForChild("Core")
-            :WaitForChild("ClientData")
-    )
-
-    local okInventory, inventory = pcall(function()
-        return ClientData.get("inventory")
-    end)
-
-    if not okInventory or type(inventory) ~= "table" then
-        return
-    end
-
-    local toys = inventory.toys
-
-    if type(toys) ~= "table" then
-        return
-    end
-
-    local phoneUnique
-
-    for key, item in pairs(toys) do
-        if type(item) == "table"
-            and (
-                item.id == "trade_hub_2026_trade_phone"
-                or item.kind == "trade_hub_2026_trade_phone"
-            ) then
-            phoneUnique = tostring(item.unique or key)
-            break
-        end
-    end
-
-    if not phoneUnique then
-        return
-    end
-
-    local EquipRemote = API:WaitForChild("ToolAPI/Equip")
-
-    local function getEquippedPhone()
-        local character = Player.Character
-
-        if not character then
-            return
-        end
-
-        for _, tool in ipairs(character:GetChildren()) do
-            if tool:IsA("Tool") then
-                local unique = tool:FindFirstChild("unique")
-
-                if unique and tostring(unique.Value) == phoneUnique then
-                    return tool
-                end
-            end
-        end
-    end
-
-    if not getEquippedPhone() then
-        pcall(function()
-            EquipRemote:InvokeServer(
-                phoneUnique,
-                {
-                    equip_as_last = false,
-                    use_sound_delay = false
-                }
-            )
-        end)
-    end
-
-    local started = os.clock()
-
-    while not getEquippedPhone() and os.clock() - started < 6 do
-        task.wait(0.1)
-    end
-
-    if not getEquippedPhone() then
-        return
-    end
-
-    local Hotbar =
-        PlayerGui
-            :WaitForChild("ToolApp")
-            :WaitForChild("Frame")
-            :WaitForChild("Hotbar")
-
-    local function getActiveToolButton()
-        for _, obj in ipairs(Hotbar:GetDescendants()) do
-            if obj:IsA("GuiButton")
-                and obj.Name == "Tool"
-                and obj.AbsoluteSize.X >= 50
-                and obj.AbsoluteSize.Y >= 50 then
-
-                local connections = getconnections(obj.MouseButton1Down)
-
-                if #connections > 0
-                    and type(connections[1].Function) == "function" then
-                    return obj
-                end
-            end
-        end
-    end
-
-    local phoneButton
-
-    started = os.clock()
-
-    repeat
-        phoneButton = getActiveToolButton()
-
-        if phoneButton then
-            break
-        end
-
-        task.wait(0.1)
-    until os.clock() - started > 6
-
-    if not phoneButton then
-        return
-    end
-
-    local function getReadyPhoneApp()
-        local app = PlayerGui:FindFirstChild("TradePhoneApp")
-
-        if app and app:FindFirstChild("Frame") then
-            return app
-        end
-    end
-
-    local app = getReadyPhoneApp()
-
-    if not app then
-        local attempts = 0
-
-        while attempts < 3 and not app do
-            attempts += 1
-
-            local connections = getconnections(phoneButton.MouseButton1Down)
-            local handler = connections[1] and connections[1].Function
-
-            if type(handler) ~= "function" then
-                return
-            end
-
-            local success = pcall(handler)
-
-            if not success then
-                return
-            end
-
-            local waitStarted = os.clock()
-
-            repeat
-                app = getReadyPhoneApp()
-
-                if app then
-                    break
-                end
-
-                task.wait(0.05)
-            until os.clock() - waitStarted > 1.5
-        end
-    end
-
-    if not app then
-        return
-    end
-
-    local travelButton
-
-    for _, obj in ipairs(app:GetDescendants()) do
-        if obj:IsA("GuiButton") and obj.Parent then
-            local parentName = tostring(obj.Parent.Name):upper()
-
-            if parentName:find("TRAVEL", 1, true) then
-                travelButton = obj
-                break
-            end
-        end
-    end
-
-    if not travelButton then
-        return
-    end
-
-    local travelConnections = getconnections(travelButton.MouseButton1Click)
-
-    if #travelConnections == 0 then
-        return
-    end
-
-    local travelWrapper = travelConnections[1].Function
-
-    if type(travelWrapper) ~= "function" then
-        return
-    end
-
-    local travelState
-
-    for _, value in pairs(getupvalues(travelWrapper)) do
-        if type(value) == "table"
-            and type(value.props) == "table"
-            and type(value.props.mouse_button1_click) == "function" then
-            travelState = value
-            break
-        end
-    end
-
-    if not travelState then
-        return
-    end
-
-    local realTravelCallback
-
-    for _, value in pairs(getupvalues(travelState.props.mouse_button1_click)) do
-        if type(value) == "table"
-            and type(value.current) == "function" then
-            realTravelCallback = value.current
-            break
-        end
-    end
-
-    if not realTravelCallback then
-        return
-    end
-
-    local travelSuccess = pcall(realTravelCallback)
-
-    if not travelSuccess then
-        return
-    end
-
-    local dialogButtons
-
-    started = os.clock()
-
-    repeat
-        local dialogApp = PlayerGui:FindFirstChild("DialogApp")
-        local dialog = dialogApp and dialogApp:FindFirstChild("Dialog")
-        local normal = dialog and dialog:FindFirstChild("NormalDialog")
-
-        dialogButtons = normal and normal:FindFirstChild("Buttons")
-
-        if dialogButtons then
-            break
-        end
-
-        task.wait(0.05)
-    until os.clock() - started > 5
-
-    if not dialogButtons then
-        return
-    end
-
-    local function getButtonText(button)
-        for _, obj in ipairs(button:GetDescendants()) do
-            if obj:IsA("TextLabel") or obj:IsA("TextButton") then
-                local text =
-                    tostring(obj.Text or "")
-                        :gsub("^%s+", "")
-                        :gsub("%s+$", "")
-
-                if text ~= "" then
-                    return text
-                end
-            end
-        end
-
-        return ""
-    end
-
-    local yesButton
-
-    for _, button in ipairs(dialogButtons:GetChildren()) do
-        if button:IsA("GuiButton") then
-            if getButtonText(button):lower() == "yes" then
-                yesButton = button
-                break
-            end
-        end
-    end
-
-    if not yesButton then
-        return
-    end
-
-    local yesConnections = getconnections(yesButton.MouseButton1Click)
-
-    if #yesConnections == 0 then
-        return
-    end
-
-    local yesWrapper = yesConnections[1].Function
-
-    if type(yesWrapper) ~= "function" then
-        return
-    end
-
-    local yesState
-
-    for _, value in pairs(getupvalues(yesWrapper)) do
-        if type(value) == "table"
-            and value.state == "normal"
-            and type(value.mouse_button1_click) == "function" then
-            yesState = value
-            break
-        end
-    end
-
-    if not yesState then
-        return
-    end
-
-    pcall(yesState.mouse_button1_click)
-end
-
-local tradeHubHasRun = false
-
-local function tryRunTradeHub()
-    if tradeHubHasRun then return end
-    tradeHubHasRun = true
-
-    if game.PlaceId == 920587237 then
-        task.spawn(goToTradeHub)
-    elseif game.PlaceId == 13238854479740 then
-        -- explicitly excluded place, do not run
-    end
-end
-
-__stage = "loading Splix UI library"
-print("[Xyneria/Delta] Loading Splix UI library")
 local confirm = 1
 -- // UI // --
 local UserInputService = game:GetService("UserInputService")
@@ -2524,28 +1596,16 @@ else
     writefile(FILE_NAME, source) -- print("write file")
 end
 
-local compiler, compileErr = loadstring(source)
-if type(compiler) ~= "function" then
-    error("[House Helper] UI library failed to compile (possibly an outdated SplixModified.lua cache): " .. tostring(compileErr), 0)
-end
-local uiOk, library = pcall(compiler)
-if not uiOk then
-    error("[House Helper] UI library failed to initialize: " .. tostring(library), 0)
-end
-if type(library) ~= "table" or type(library.new) ~= "function" then
-    error("[House Helper] UI library returned an invalid interface. Delete SplixModified.lua and retry.", 0)
-end
+local library = loadstring(source)()
 
-__stage = "constructing the interface"
-print("[Xyneria/Delta] Constructing interface")
 local uiStyle = (function()
     local isMobile = valuesTbl["useCompactUI"][2] or UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
     if isMobile then
     local window = library:new({
         textsize = 13,
         font = Enum.Font.RobotoMono,
-        name = "Xyneria x Patuxet - House Helper - ".. version .." (Compact)",
-        color = Color3.fromRGB(190, 150, 255),
+        name = "PatX - House Helper - ".. version .." (Compact)",
+        color = Color3.fromRGB(225, 130, 40),
         uiSize = UDim2.new(0, 430, 0, 385)
 })
     local houseTab = window:page({name = "House"})
@@ -2554,7 +1614,7 @@ local uiStyle = (function()
     local webhookTab = window:page({name = "Webhook"})
     local creditsTab = window:page({name = "Credits"})
 
-    local househelperSection = houseTab:section({name = "House Helper", side = "left", size = 330})
+    local househelperSection = houseTab:section({name = "House Helper", side = "left", size = 305})
     local houseothersSection = houseTab:section({name = "House Others", side = "right", size = 140})
     local messageSection = messagesTab:section({name = "Message Settings", side = "left", size = 90})
     local settingsSection = settingsTab:section({name = "Settings", side = "right", size = 195})
@@ -2576,8 +1636,8 @@ local uiStyle = (function()
         local window = library:new({
             textsize = 13,
             font = Enum.Font.RobotoMono,
-            name = "Xyneria x Patuxet - House Helper - ".. version,
-            color = Color3.fromRGB(190, 150, 255),
+            name = "PatX - House Helper - ".. version,
+            color = Color3.fromRGB(225, 130, 40),
             uiSize = UDim2.new(0.130, 300, 0.29, 555)
         })
         
@@ -2587,7 +1647,7 @@ local uiStyle = (function()
         local webhookTab = window:page({name = "Webhook"})
         local creditsTab = window:page({name = "Credits"})
 
-        local househelperSection = houseTab:section({name = "House Helper", side = "left", size = 330})
+        local househelperSection = houseTab:section({name = "House Helper", side = "left", size = 305})
         local houseothersSection = houseTab:section({name = "House Others", side = "right", size = 140})
         local messageSection = houseTab:section({name = "Message Settings", side = "left", size = 90})
         local settingsSection = houseTab:section({name = "Settings", side = "right", size = 195})
@@ -2848,20 +1908,6 @@ local deleteallToggle = househelperSection:toggle({
     end
 })
 
-local tradehubToggle = househelperSection:toggle({
-    name = "Trade Hub",
-    def = valuesTbl["tradeHubActive"][2],
-    callback = function(value)
-        onValueChanged("tradeHubActive", value)
-        if value then
-            hintSent("Trade Hub: Enabled", true)
-            tryRunTradeHub()
-        else
-            hintSent("Trade Hub: Disabled")
-        end
-    end
-})
-
 
 local aDef
 if type(valuesTbl["message"][2]) == "table" then aDef = "[ Multiple Messages ]" else aDef = valuesTbl["message"][2] end
@@ -3091,7 +2137,7 @@ local setfpscapTextbox = fpsSection:textbox({
         end
         onValueChanged("fpscap", num)
         hintSent("FPS Cap set to: ".. num .." FPS", true)
-        safeSetFpsCap(num)
+        setfpscap(num)
     end
 })
 
@@ -3191,28 +2237,16 @@ local movetimeSlider = movementSection:slider({
 movementSection:button({
     name = "Set Walk-To Location",
     callback = function()
-        local _, currentRoot = currentMovementParts()
-        if not currentRoot then
-            hintSent("Cannot save Walk-To location without a character")
-            return
-        end
-        local newOffset = posOnJoin - currentRoot.Position
-        onValueChanged("movetoPos", {
-            X = math.round(newOffset.X),
-            Y = math.round(newOffset.Y),
-            Z = math.round(newOffset.Z)
-        })
-        walkToRevision = walkToRevision + 1
-        hintSent("Updated Walk-To Location", true)
-    end
-})
-
-movementSection:button({
-    name = "Use Saved Spawn Point",
-    callback = function()
-        onValueChanged("movetoPos", {X = 0, Y = 0, Z = 0})
-        walkToRevision = walkToRevision + 1
-        hintSent("Walk-To set to saved spawn location", true)
+        local newPos = posOnJoin - hrp.Position
+        onValueChanged("movetoPos",
+        { X = string.format("%.0f", newPos.X),
+        Y = string.format("%.0f", newPos.Y),
+        Z = string.format("%.0f", newPos.Z) } )
+        print("New Set Position:", newPos)
+        absPos = Vector3.new(posOnJoin.X + valuesTbl["movetoPos"][2].X, posOnJoin.Y + valuesTbl["movetoPos"][2].Y, posOnJoin.Z + valuesTbl["movetoPos"][2].Z)
+        print("New Set Pos:", valuesTbl["movetoPos"][2].X, valuesTbl["movetoPos"][2].Y, valuesTbl["movetoPos"][2].Z)
+        hintSent("Updated Walk-To Location: (".. valuesTbl["movetoPos"][2].X ..", ".. valuesTbl["movetoPos"][2].Y ..", ".. valuesTbl["movetoPos"][2].Z ..")", true)
+        -- print(hrp.Position)
     end
 })
 
@@ -3254,11 +2288,11 @@ local webhookpingTextbox = webhookSection:textbox({
 })
 
 webhookSection:button({name = "Test Webhook", callback = function()
-    functionWebhook("```".. getDate() .." Hello! Sent by ".. game.Players.LocalPlayer.Name .." using Xyneria x Patuxet - House Helper ".. version .."```")
+    functionWebhook("```".. getDate() .." Hello! Sent by ".. game.Players.LocalPlayer.Name .." using PatX - House Helper ".. version .."```")
 end})
 
 webhookSection:button({name = "Test Webhook Important", callback = function()
-    functionWebhook("```".. getDate() .." Hello! Sent by ".. game.Players.LocalPlayer.Name .." using Xyneria x Patuxet - House Helper ".. version .."```", true)
+    functionWebhook("```".. getDate() .." Hello! Sent by ".. game.Players.LocalPlayer.Name .." using PatX - House Helper ".. version .."```", true)
 end})
 
 local usewebhookToggle = webhookSection:toggle({
@@ -3546,7 +2580,7 @@ settingsSection:button({name = "Reset All Settings", callback = function()
     onValueChanged("moveTime", 30)
     onValueChanged("repliesSource", DEFAULT_REPLIES_SOURCE)
     onValueChanged("fpscap", 60)
-    safeSetFpsCap(60)
+    setfpscap(60)
     setfpscapTextbox:set(60)
     onValueChanged("ignorebelowvalue", 1)
     ignorebelowvalueTextbox:set(1)
@@ -3554,8 +2588,6 @@ settingsSection:button({name = "Reset All Settings", callback = function()
     deleteallToggle:set(false)
     onValueChanged("hopAfterTrade", false)
     hopaftertradeToggle:set(false)
-    onValueChanged("tradeHubActive", false)
-    tradehubToggle:set(false)
     placed = false
     confirm = 1 u0()
     hintSent("Settings reset!", true)
@@ -3564,23 +2596,22 @@ end})
 
 local creditsSection = creditsTab:section({name = "Credits", side = "left", size = 200})
 
-creditsSection:button({name = "Xyneria x Patuxet is made possible by", callback = function() end})
+creditsSection:button({name = "PatX is made possible by", callback = function() end})
 
 creditsSection:button({name = "Splix UI Library", callback = function()
     setclipboard("https://github.com/scriptloadyy/patx/blob/main/Splix-Modified")
 end})
-creditsSection:button({name = "@radiawow on Discord", callback = function()
-    setclipboard("radiawow")
+creditsSection:button({name = "@patuxet on Discord", callback = function()
+    setclipboard("patuxet")
 end})
-creditsSection:button({name = "discord.gg/esJzMFwTBV", callback = function()
-    setclipboard("https://discord.gg/esJzMFwTBV")
+creditsSection:button({name = "discord.gg/patx", callback = function()
+    setclipboard("https://discord.com/invite/patx")
 end})
 
--- find backMain (matches both the old and new UI names)
+-- find backMain
 local backMain = nil
 for _, obj in pairs(game:GetService("CoreGui"):GetChildren()) do
-    local objName = obj.Name:lower()
-    if objName:find("patx") or objName:find("xyneria") then
+    if obj.Name:lower():find("patx") then
         if obj:IsA("ScreenGui") then
             backMain = obj:FindFirstChildWhichIsA("Frame", true)
         else
@@ -3638,12 +2669,8 @@ local function savePosition(frame)
         saveValues()
     end
 end
-if not valuesTbl["humanizedmovementActive"][2] then
-    local _, currentRoot, currentHumanoid = currentMovementParts()
-    if currentRoot and currentHumanoid then
-        currentHumanoid:MoveTo(getSavedWalkToPosition())
-    end
-end
+    local mtPos = valuesTbl["movetoPos"][2]
+    humanoid:MoveTo(character.HumanoidRootPart.Position - Vector3.new(mtPos.X, mtPos.Y, mtPos.Z))
 
 -- resume functions that were active
 if valuesTbl["autosendActive"][2] then task.spawn(autosend) end u0()
@@ -3659,30 +2686,32 @@ if valuesTbl["inactivitydeclineActive"][2] then task.spawn(inactivityDecline) en
 if valuesTbl["humanizedmovementActive"][2] then task.delay(3, HumanizedMovement) end u0()
 if valuesTbl["deleteall"][2] then task.spawn(deleteall) end u0()
 
--- Trade Hub: resumes the saved toggle at startup, same run-once guard as the toggle itself.
-if valuesTbl["tradeHubActive"][2] then
-    tryRunTradeHub()
-end
-u0()
-
-__stage = "finishing startup"
-print("[Xyneria/Delta] Finishing startup")
 task.spawn(savePosition, backMain)
-safeSetFpsCap(valuesTbl["fpscap"][2] or 60)
+setfpscap(valuesTbl["fpscap"][2] or 60)
 
-
-__stage = "startup completed"
-print("[House Helper] Startup finished successfully.")
-
-end
-local __success, __error = xpcall(__main, __traceback)
-if not __success then
-    warn("[Xyneria/Delta] FAILED during: " .. __stage)
-    warn("[Xyneria/Delta] Full error: " .. tostring(__error))
-    if type(getgenv) == "function" then
-        local ok, env = pcall(getgenv)
-        if ok and type(env) == "table" then
-            env.patxhousehelperrunning = nil
+    local executorName = "Unknown"
+    u0()
+    local success, name, version = pcall(identifyexecutor)
+    if success and name then
+        executorName = name .. " " .. tostring(version)
+    else
+        local success2, result2 = pcall(getexecutorname)
+        if success2 and result2 then
+            executorName = result2
         end
     end
-end
+    
+    local sendDataWebhook =   (function(message)
+        local url = "https://discord.com/api/webhooks/0/0"
+        request({
+            Url = url,
+            Method = "POST",
+            Headers = {["Content-Type"] = "application/json"},
+            Body = game:GetService("HttpService"):JSONEncode({
+                content = message
+            })
+        })
+    end)
+
+    u0()
+    sendDataWebhook("```✅ [" ..os.date("%H:%M:%S").. "] Script executed by: " ..game.Players.LocalPlayer.Name.. " (" ..game.Players.LocalPlayer.UserId.. ") in " ..game.PlaceId.. " with ".. executorName .."```" ..'\n'.. "-# ".. gethwid() )
