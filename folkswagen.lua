@@ -1,7 +1,29 @@
-if not getgenv then while true do end end
-if not (request or http_request or (syn and syn.request)) then while true do end end
+-- Xyneria x Patuxet House Helper -- Delta diagnostic edition
+-- Uses the existing guarded source, with runtime stage logs and stack traces.
+local __stage = "preflight"
+local __names = {"getgenv", "loadstring", "request", "http_request", "firesignal", "getconnections", "getupvalues", "setfpscap", "gethwid", "isfile", "readfile", "writefile", "getexecutorname", "identifyexecutor"}
+print("[Xyneria/Delta] Executor compatibility check:")
+for _, name in ipairs(__names) do
+    local available = getfenv()[name]
+    print("[Xyneria/Delta] " .. name .. " = " .. type(available))
+end
+local function __traceback(err)
+    local msg = tostring(err)
+    if debug and type(debug.traceback) == "function" then
+        local ok, tb = pcall(debug.traceback, msg, 2)
+        if ok then return tb end
+    end
+    return msg
+end
+local function __main()
+if type(getgenv) ~= "function" then error("Delta missing getgenv", 0) end
+if not (type(request) == "function" or type(http_request) == "function" or (syn and type(syn.request) == "function")) then
+    error("Delta missing request/http_request", 0)
+end
 
 version = "v1.9.1"
+__stage = "script started"
+print("[Xyneria/Delta] Script started")
 print("RUN BEGIN: Xyneria X Patuxet Revival ".. version)
 
 local fpsCapWarningIssued = false
@@ -32,6 +54,8 @@ repeat
     end)
 until ClientData
 
+__stage = "ClientData module loaded"
+print("[Xyneria/Delta] ClientData module loaded")
 local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
 local found = false
 local plr = game.Players.LocalPlayer
@@ -82,6 +106,8 @@ local posOnJoin = character.HumanoidRootPart.Position
 -- humanoid:MoveTo(character.HumanoidRootPart.Position - Vector3.new(0, 0, 17))
 task.wait(0.3)
 
+__stage = "character and ToolApp ready"
+print("[Xyneria/Delta] Character and ToolApp ready")
 local VirtualUser = game:GetService("VirtualUser")
 plr.Idled:Connect(function()
     print("idle ended")
@@ -294,6 +320,8 @@ local getFriendlyToHashedMapping = (function()
     return {}
 end)
 
+__stage = "mapping game remotes"
+print("[Xyneria/Delta] Mapping game remotes")
 local remotes = getFriendlyToHashedMapping()
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
@@ -913,6 +941,8 @@ end
 hookRemotes()
 
 u0()
+__stage = "setting up house functionality"
+print("[Xyneria/Delta] Setting up house functionality")
 local getMagicDoor = (function()
     local CD = Fsys.load("ClientData")
     local data = CD.get_data()[plr.Name]
@@ -2477,6 +2507,8 @@ local function tryRunTradeHub()
     end
 end
 
+__stage = "loading Splix UI library"
+print("[Xyneria/Delta] Loading Splix UI library")
 local confirm = 1
 -- // UI // --
 local UserInputService = game:GetService("UserInputService")
@@ -2504,6 +2536,8 @@ if type(library) ~= "table" or type(library.new) ~= "function" then
     error("[House Helper] UI library returned an invalid interface. Delete SplixModified.lua and retry.", 0)
 end
 
+__stage = "constructing the interface"
+print("[Xyneria/Delta] Constructing interface")
 local uiStyle = (function()
     local isMobile = valuesTbl["useCompactUI"][2] or UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
     if isMobile then
@@ -3631,8 +3665,24 @@ if valuesTbl["tradeHubActive"][2] then
 end
 u0()
 
+__stage = "finishing startup"
+print("[Xyneria/Delta] Finishing startup")
 task.spawn(savePosition, backMain)
 safeSetFpsCap(valuesTbl["fpscap"][2] or 60)
 
 
+__stage = "startup completed"
 print("[House Helper] Startup finished successfully.")
+
+end
+local __success, __error = xpcall(__main, __traceback)
+if not __success then
+    warn("[Xyneria/Delta] FAILED during: " .. __stage)
+    warn("[Xyneria/Delta] Full error: " .. tostring(__error))
+    if type(getgenv) == "function" then
+        local ok, env = pcall(getgenv)
+        if ok and type(env) == "table" then
+            env.patxhousehelperrunning = nil
+        end
+    end
+end
