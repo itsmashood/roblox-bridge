@@ -910,6 +910,14 @@ async function fetchWithBrowser(url) {
   const errors = [];
   const jsonShapes = [];
   const observedOrigins = new Set();
+  // Save public, first-party JavaScript chunks for offline inspection when the
+  // site's serialized data changes. Never save page HTML, headers, cookies,
+  // request bodies, or third-party scripts.
+  const publicJSChunks = [];
+  const publicJSLimitBytes = 24 * 1024 * 1024;
+  let publicJSBytes = 0;
+  let publicJSCount = 0;
+  const publicJSFolder = "elvebredd_diagnostic_chunks";
   let pageState = null;
 
   function ingest(text, label) {
@@ -977,6 +985,21 @@ async function fetchWithBrowser(url) {
               shape: summarizeJsonShape(text) });
           }
           ingest(text, resource);
+          if (isOfficial && resourceType === "script" && /\.js$/i.test(resource)
+              && body.length > 0 && body.length < 5 * 1024 * 1024
+              && publicJSCount < 40 && publicJSBytes + body.length < publicJSLimitBytes) {
+            // A fresh browser context ensures these are unauthenticated public files.
+            const filename = `chunk-${String(++publicJSCount).padStart(3, "0")}.js`;
+            try {
+              await fs.mkdir(publicJSFolder, { recursive: true });
+              await fs.writeFile(`${publicJSFolder}/${filename}`, body);
+              publicJSBytes += body.length;
+              publicJSChunks.push({ filename, resource, bytes: body.length,
+                matchesOldKeys: /initialPets|rvalue|nvalue|mvalue/i.test(text) });
+            } catch (e) {
+              errors.push(`Could not save public script ${filename}: ${String(e.message).slice(0, 100)}`);
+            }
+          }
         } catch (e) {
           errors.push(`Could not inspect ${resource}: ${String(e.message).slice(0, 100)}`);
         }
@@ -1028,6 +1051,7 @@ async function fetchWithBrowser(url) {
     }).slice(0, 220),
     requestFailures: failures,
     jsonResponseShapes: jsonShapes,
+    publicJSChunks,
     parsedCandidates: captured,
     errors: errors.slice(0, 30)
   };

@@ -44,7 +44,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: elvebredd-fetch-diagnostics
-          path: elvebredd_fetch_diagnostics.json
+          path: |
+            elvebredd_fetch_diagnostics.json
+            elvebredd_diagnostic_chunks/
           if-no-files-found: ignore
           retention-days: 7
 
