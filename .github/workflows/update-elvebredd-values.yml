@@ -23,13 +23,30 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Validate updater syntax
         run: node --check update_elvebredd_values.js
 
+      - name: Test parsing and overwrite protections
+        run: node test_updater.js
+
+      - name: Install browser fallback
+        run: |
+          npm install --no-save --no-package-lock playwright
+          npx playwright install --with-deps chromium
+
       - name: Update values from Elvebredd
         run: node update_elvebredd_values.js
+
+      - name: Upload fetch diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: elvebredd-fetch-diagnostics
+          path: elvebredd_fetch_diagnostics.json
+          if-no-files-found: ignore
+          retention-days: 7
 
       - name: Validate generated database JSON
         run: |

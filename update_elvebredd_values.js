@@ -6,6 +6,8 @@ const MIN_ITEMS = Number(process.env.MIN_ITEMS || 100);
 const MIN_PREVIOUS_ITEM_RATIO = Number(process.env.MIN_PREVIOUS_ITEM_RATIO || 0.90);
 const MIN_PREVIOUS_OVERLAP_RATIO = Number(process.env.MIN_PREVIOUS_OVERLAP_RATIO || 0.85);
 const MIN_PREVIOUS_NONZERO_RATIO = Number(process.env.MIN_PREVIOUS_NONZERO_RATIO || 0.85);
+const BROWSER_WAIT_MS = Number(process.env.BROWSER_WAIT_MS || 12000);
+const DIAGNOSTICS_FILE = process.env.DIAGNOSTICS_FILE || "elvebredd_fetch_diagnostics.json";
 
 const VARIANTS = ["NP", "F", "R", "FR", "N", "NF", "NR", "NFR", "M", "MF", "MR", "MFR"];
 
@@ -723,6 +725,61 @@ function extractInitialPetsArraysFromText(text) {
   return arrays;
 }
 
+// Extract candidate item arrays from structured responses used by newer client-rendered pages.
+// Only recognize item data with a name and a positive value, not unrelated JSON objects.
+function normalizeNestedItem(raw) {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const v = raw.values || raw.valuations;
+  if (!v || typeof v !== "object" || Array.isArray(v)) return raw;
+
+  const merged = { ...raw };
+  for (const [age, prefix] of [["default", "rvalue"], ["regular", "rvalue"], ["neon", "nvalue"], ["mega", "mvalue"]]) {
+    const values = v[age];
+    if (!values || typeof values !== "object") continue;
+    if (merged[prefix] === undefined) merged[prefix] = values.base ?? values.fly_ride ?? values.fr;
+    for (const [suffix, keys] of [
+      ["nopotion", ["nopotion", "np", "noPotion"]],
+      ["fly", ["fly", "f"]],
+      ["ride", ["ride", "r"]],
+      ["fly ride", ["fly_ride", "fr", "flyRide"]]
+    ]) {
+      const value = keys.map(key => values[key]).find(value => toNumber(value) > 0);
+      if (value !== undefined && merged[`${prefix} - ${suffix}`] === undefined) {
+        merged[`${prefix} - ${suffix}`] = value;
+      }
+    }
+  }
+  return merged;
+}
+
+function extractStructuredItemArrays(text) {
+  const parsed = tryJsonParse(String(text || "").trim());
+  if (!parsed || typeof parsed !== "object") return [];
+  const arrays = [];
+  const seen = new WeakSet();
+  let visited = 0;
+  function visit(value, depth) {
+    if (!value || typeof value !== "object" || depth > 16 || visited++ > 100000) return;
+    if (seen.has(value)) return;
+    seen.add(value);
+    if (Array.isArray(value)) {
+      const candidates = value.map(normalizeNestedItem).filter(value => convertElvebreddItem(value));
+      if (candidates.length) arrays.push(candidates);
+      // Walk only a few non-items to find nested arrays, not every pet value structure.
+      if (candidates.length === 0) for (const entry of value) visit(entry, depth + 1);
+      return;
+    }
+    const direct = normalizeNestedItem(value);
+    if (convertElvebreddItem(direct)) {
+      arrays.push([direct]);
+      return;
+    }
+    for (const child of Object.values(value)) visit(child, depth + 1);
+  }
+  visit(parsed, 0);
+  return arrays;
+}
+
 function cleanMergedNotes(item) {
   if (!item || !item.valueMeta || !Array.isArray(item.valueMeta.notes)) return;
 
@@ -739,11 +796,14 @@ function cleanMergedNotes(item) {
 function extractElvebreddItems(html) {
   const arrays = [];
 
+  arrays.push(...extractStructuredItemArrays(html));
+
   arrays.push(...extractInitialPetsArraysFromText(html));
 
   const strings = collectStringsFromNextFlight(html);
   for (const str of strings) {
     arrays.push(...extractInitialPetsArraysFromText(str));
+    arrays.push(...extractStructuredItemArrays(str));
   }
 
   const map = new Map();
@@ -795,6 +855,103 @@ async function fetchPage(url) {
   }
 
   return await response.text();
+}
+
+// Client-side fallback: capture API/Next.js responses after running the page in Chromium.
+// This is deliberately best-effort; validation below still guards the committed database.
+async function fetchWithBrowser(url) {
+  const { chromium } = require("playwright");
+  const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
+  const map = new Map();
+  const captured = [];
+  const pending = [];
+  const errors = [];
+
+  function ingest(text, label) {
+    if (!text) return;
+    if (!/(initialPets|rvalue|nvalue|mvalue|"values"|\"values\"|"pets"|"items")/i.test(text)) return;
+    const items = extractElvebreddItems(text);
+    captured.push({ resource: label, parsedItems: items.size });
+    for (const [key, item] of items) {
+      const existing = map.get(key);
+      if (!existing) { map.set(key, item); continue; }
+      for (const variant of VARIANTS) {
+        if ((existing[variant] || 0) <= 0 && item[variant] > 0) {
+          existing[variant] = item[variant];
+          existing.valueMeta.source[variant] = item.valueMeta.source[variant];
+          existing.valueMeta.confidence[variant] = item.valueMeta.confidence[variant];
+          existing.valueMeta.originalRaw[variant] = item.valueMeta.originalRaw[variant];
+        }
+      }
+    }
+  }
+
+  try {
+    const context = await browser.newContext({
+      userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      locale: "en-US"
+    });
+    const page = await context.newPage();
+    page.on("pageerror", error => errors.push(`Page error: ${String(error.message).slice(0, 180)}`));
+    page.on("response", response => {
+      const responseUrl = response.url();
+      if (!/^https:\/\/([\w-]+\.)?elvebredd\.com\//i.test(responseUrl)) return;
+      const type = (response.headers()["content-type"] || "").toLowerCase();
+      if (!/(json|text\/html|javascript|text\/plain|application\/x-ndjson)/.test(type)) return;
+      const contentLength = Number(response.headers()["content-length"] || 0);
+      if (contentLength > 8 * 1024 * 1024) return;
+      pending.push((async () => {
+        try {
+          const body = await response.body();
+          if (body.length > 8 * 1024 * 1024) return;
+          ingest(body.toString("utf8"), new URL(responseUrl).pathname);
+        } catch (e) {
+          errors.push(`Response unavailable (${response.status()} ${new URL(responseUrl).pathname}): ${e.message}`);
+        }
+      })());
+    });
+
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
+    await page.waitForTimeout(BROWSER_WAIT_MS);
+    ingest(await page.content(), "rendered HTML");
+    // Some client-side calculators request their item catalog only after opening the chooser.
+    if (map.size < MIN_ITEMS) {
+      for (const selector of [
+        'button[aria-label*="Add" i]',
+        'button:has(img[alt*="Add Pets" i])',
+        '[role="button"]:has(img[alt*="Add Pets" i])'
+      ]) {
+        try {
+          const button = page.locator(selector).first();
+          if (await button.count() && await button.isVisible()) {
+            await button.click({ timeout: 2500 });
+            await page.waitForTimeout(4000);
+            ingest(await page.content(), "opened item chooser");
+            break;
+          }
+        } catch (e) { errors.push(`Picker interaction: ${e.message.slice(0, 120)}`); }
+      }
+    }
+    await Promise.allSettled(pending);
+    await context.close();
+  } catch (error) {
+    errors.push(`Browser: ${error.message}`);
+  } finally {
+    await browser.close();
+  }
+
+  // Do not save scraped HTML, browser cookies, or any potentially sensitive tokens.
+  const diagnostic = {
+    checkedAt: new Date().toISOString(),
+    capturedResponses: captured.slice(0, 120),
+    totalResponses: captured.length,
+    extractedItems: map.size,
+    errors: errors.slice(0, 30)
+  };
+  try { await fs.writeFile(DIAGNOSTICS_FILE, JSON.stringify(diagnostic, null, 2) + "\n"); }
+  catch (error) { console.warn(`Could not write diagnostics: ${error.message}`); }
+  console.log(`Browser fallback found ${map.size} value items across ${captured.length} responses.`);
+  return map;
 }
 
 function categoryCounts(items) {
@@ -966,8 +1123,22 @@ async function main() {
 
   const previousOutput = await readPreviousOutput();
 
-  const html = await fetchPage(ELVEBREDD_URL);
-  const itemMap = extractElvebreddItems(html);
+  let itemMap = new Map();
+  try {
+    const html = await fetchPage(ELVEBREDD_URL);
+    itemMap = extractElvebreddItems(html);
+    console.log(`Direct response: extracted ${itemMap.size} items from ${html.length} bytes of HTML.`);
+  } catch (error) {
+    console.warn(`Direct request failed: ${error.message}`);
+  }
+
+  const lastCount = previousOutput ? Object.keys(previousOutput.items).length : 0;
+  const expectedCount = Math.max(MIN_ITEMS, Math.ceil(lastCount * MIN_PREVIOUS_ITEM_RATIO));
+  if (itemMap.size < expectedCount) {
+    console.warn(`Trying browser fallback; direct extraction returned ${itemMap.size} item(s), need at least ${expectedCount}.`);
+    const browserItems = await fetchWithBrowser(ELVEBREDD_URL);
+    if (browserItems.size > itemMap.size) itemMap = browserItems;
+  }
   const sortedEntries = Array.from(itemMap.entries()).sort(([a], [b]) => a.localeCompare(b));
   const items = Object.fromEntries(sortedEntries);
 
@@ -1046,7 +1217,11 @@ async function main() {
   }
 }
 
-main().catch(error => {
-  console.error(error);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch(error => {
+    console.error(error);
+    process.exit(1);
+  });
+}
+
+module.exports = { extractElvebreddItems, extractStructuredItemArrays, validateCandidate };
