@@ -857,21 +857,66 @@ async function fetchPage(url) {
   return await response.text();
 }
 
-// Client-side fallback: capture API/Next.js responses after running the page in Chromium.
-// This is deliberately best-effort; validation below still guards the committed database.
+// Client-side fallback and safe network diagnostics for changes in Elvebredd's data loading.
+// Diagnostics intentionally omit request bodies, cookies, authorization headers and query strings.
+function safeResourceLabel(url) {
+  try {
+    const parsed = new URL(url);
+    const segments = parsed.pathname.split("/").map(segment => {
+      if (segment.length > 28 || /[a-f0-9]{16,}/i.test(segment) || /@/.test(segment)) return "[redacted]";
+      return segment;
+    });
+    return `${parsed.hostname}${segments.join("/")}`.slice(0, 180);
+  } catch (_) {
+    return "[unavailable]";
+  }
+}
+
+function summarizeJsonShape(text) {
+  if (!text || text.length > 8 * 1024 * 1024) return null;
+  try {
+    const obj = JSON.parse(text);
+    function shape(value) {
+      if (Array.isArray(value)) {
+        return { type: "array", length: value.length,
+          firstKeys: value[0] && typeof value[0] === "object"
+            ? Object.keys(value[0]).slice(0, 18) : [] };
+      }
+      if (value && typeof value === "object") {
+        return { type: "object", keys: Object.keys(value).slice(0, 22),
+          children: Object.fromEntries(Object.entries(value).slice(0, 12)
+            .filter(([, child]) => child && typeof child === "object")
+            .map(([key, child]) => [key, Array.isArray(child)
+              ? { type: "array", length: child.length, firstKeys: child[0] && typeof child[0] === "object" ? Object.keys(child[0]).slice(0, 14) : [] }
+              : { type: "object", keys: Object.keys(child).slice(0, 14) }])) };
+      }
+      return { type: typeof value };
+    }
+    return shape(obj);
+  } catch (_) {
+    return null;
+  }
+}
+
 async function fetchWithBrowser(url) {
   const { chromium } = require("playwright");
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   const map = new Map();
   const captured = [];
+  const requests = [];
+  const network = [];
+  const failures = [];
   const pending = [];
   const errors = [];
+  const jsonShapes = [];
+  const observedOrigins = new Set();
+  let pageState = null;
 
   function ingest(text, label) {
     if (!text) return;
-    if (!/(initialPets|rvalue|nvalue|mvalue|"values"|\"values\"|"pets"|"items")/i.test(text)) return;
+    if (!/(initialPets|rvalue|nvalue|mvalue|"values"|\\"values\\"|"pets"|"items")/i.test(text)) return;
     const items = extractElvebreddItems(text);
-    captured.push({ resource: label, parsedItems: items.size });
+    if (captured.length < 120) captured.push({ resource: label, parsedItems: items.size });
     for (const [key, item] of items) {
       const existing = map.get(key);
       if (!existing) { map.set(key, item); continue; }
@@ -893,20 +938,47 @@ async function fetchWithBrowser(url) {
     });
     const page = await context.newPage();
     page.on("pageerror", error => errors.push(`Page error: ${String(error.message).slice(0, 180)}`));
+    page.on("request", request => {
+      if (requests.length < 350) {
+        requests.push({ resource: safeResourceLabel(request.url()),
+          type: request.resourceType(), method: request.method() });
+      }
+    });
+    page.on("requestfailed", request => {
+      if (failures.length < 60) failures.push({
+        resource: safeResourceLabel(request.url()),
+        type: request.resourceType(),
+        reason: String(request.failure()?.errorText || "unknown").slice(0, 120)
+      });
+    });
     page.on("response", response => {
       const responseUrl = response.url();
-      if (!/^https:\/\/([\w-]+\.)?elvebredd\.com\//i.test(responseUrl)) return;
+      let host = "";
+      try { host = new URL(responseUrl).hostname.toLowerCase(); } catch (_) { return; }
+      observedOrigins.add(host);
       const type = (response.headers()["content-type"] || "").toLowerCase();
-      if (!/(json|text\/html|javascript|text\/plain|application\/x-ndjson)/.test(type)) return;
-      const contentLength = Number(response.headers()["content-length"] || 0);
-      if (contentLength > 8 * 1024 * 1024) return;
+      const resourceType = response.request().resourceType();
+      const resource = safeResourceLabel(responseUrl);
+      const status = response.status();
+      const sizeHint = Number(response.headers()["content-length"] || 0);
+      if (network.length < 350) network.push({ resource, status, type: resourceType,
+        contentType: type.split(";")[0], bytesAdvertised: sizeHint || undefined });
+      if (sizeHint > 8 * 1024 * 1024) return;
+      const isJson = /json|ndjson/.test(type);
+      const isOfficial = host === "elvebredd.com" || host.endsWith(".elvebredd.com") || host === "elvebredd.net" || host.endsWith(".elvebredd.net");
+      if (!isJson && !(isOfficial && /javascript|html|text\/plain/.test(type))) return;
       pending.push((async () => {
         try {
           const body = await response.body();
           if (body.length > 8 * 1024 * 1024) return;
-          ingest(body.toString("utf8"), new URL(responseUrl).pathname);
+          const text = body.toString("utf8");
+          if (isJson && jsonShapes.length < 60) {
+            jsonShapes.push({ resource, status, bytes: body.length,
+              shape: summarizeJsonShape(text) });
+          }
+          ingest(text, resource);
         } catch (e) {
-          errors.push(`Response unavailable (${response.status()} ${new URL(responseUrl).pathname}): ${e.message}`);
+          errors.push(`Could not inspect ${resource}: ${String(e.message).slice(0, 100)}`);
         }
       })());
     });
@@ -914,7 +986,9 @@ async function fetchWithBrowser(url) {
     await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
     await page.waitForTimeout(BROWSER_WAIT_MS);
     ingest(await page.content(), "rendered HTML");
-    // Some client-side calculators request their item catalog only after opening the chooser.
+    pageState = { title: (await page.title()).slice(0, 120),
+      url: safeResourceLabel(page.url()),
+      visibleText: (await page.locator("body").innerText().catch(() => "")).slice(0, 380) };
     if (map.size < MIN_ITEMS) {
       for (const selector of [
         'button[aria-label*="Add" i]',
@@ -927,30 +1001,39 @@ async function fetchWithBrowser(url) {
             await button.click({ timeout: 2500 });
             await page.waitForTimeout(4000);
             ingest(await page.content(), "opened item chooser");
+            pageState.chooserVisibleText = (await page.locator("body").innerText().catch(() => "")).slice(0, 380);
             break;
           }
-        } catch (e) { errors.push(`Picker interaction: ${e.message.slice(0, 120)}`); }
+        } catch (e) { errors.push(`Picker interaction: ${String(e.message).slice(0, 120)}`); }
       }
     }
     await Promise.allSettled(pending);
     await context.close();
   } catch (error) {
-    errors.push(`Browser: ${error.message}`);
+    errors.push(`Browser: ${String(error.message).slice(0, 250)}`);
   } finally {
     await browser.close();
   }
 
-  // Do not save scraped HTML, browser cookies, or any potentially sensitive tokens.
   const diagnostic = {
     checkedAt: new Date().toISOString(),
-    capturedResponses: captured.slice(0, 120),
-    totalResponses: captured.length,
-    extractedItems: map.size,
+    summary: { requests: requests.length, responses: network.length,
+      inspectedResponses: captured.length, extractedItems: map.size,
+      hosts: Array.from(observedOrigins).sort() },
+    pageState,
+    // Put likely first-party data calls ahead of ads, analytics, fonts and other assets.
+    network: network.sort((a, b) => {
+      const rank = x => (x.type === "fetch" || x.type === "xhr" ? 0 : x.status >= 400 ? 1 : x.type === "document" ? 2 : 3);
+      return rank(a) - rank(b);
+    }).slice(0, 220),
+    requestFailures: failures,
+    jsonResponseShapes: jsonShapes,
+    parsedCandidates: captured,
     errors: errors.slice(0, 30)
   };
   try { await fs.writeFile(DIAGNOSTICS_FILE, JSON.stringify(diagnostic, null, 2) + "\n"); }
   catch (error) { console.warn(`Could not write diagnostics: ${error.message}`); }
-  console.log(`Browser fallback found ${map.size} value items across ${captured.length} responses.`);
+  console.log(`Browser inspected ${network.length} responses on ${observedOrigins.size} hosts; found ${map.size} items.`);
   return map;
 }
 
