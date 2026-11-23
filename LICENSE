@@ -1,0 +1,138 @@
+ROBLOX BRIDGE / XYNERIA
+RESTRICTED SOURCE-AVAILABLE SOFTWARE LICENCE - VERSION 1.0
+Copyright (c) 2026 itsmashood and the respective copyright holders.
+All rights reserved, except to the extent expressly permitted below.
+
+NOTICE: THIS IS NOT AN OPEN-SOURCE LICENCE.
+
+1. PARTIES AND COVERED MATERIAL
+
+For the purposes of this licence, "Licensor" means the maintainer operating
+https://github.com/itsmashood/roblox-bridge, but ONLY for original material the
+maintainer owns or is legally entitled to license. "Covered Code" means that
+material in the repository, including original updater scripts, workflows and
+documentation, subject to section 6 below. "Licensee" means a person or entity
+that has obtained a valid written licence from the Licensor.
+
+2. NO GENERAL PERMISSION TO USE
+
+Making the repository public does not grant a broad licence to install, run,
+copy, modify, distribute, sell, sublicense, host or commercially exploit the
+Covered Code. Those acts require the Licensor's prior explicit written
+approval except where they are independently allowed by applicable law, an
+applicable upstream licence, or GitHub's service terms. In particular,
+viewing and forking a public repository through GitHub's features are subject
+to GitHub's platform permissions; this document does not purport to revoke
+those platform permissions.
+
+3. HOW A RESTRICTED LICENCE MAY BE GRANTED
+
+The Licensor MAY issue a separate written authorisation identifying the
+Licensee and specifying:
+
+- the Covered Code and versions to which it applies;
+- permitted purpose and deployment environments;
+- permitted modifications and copies;
+- permitted redistribution, if any;
+- whether commercial activity is allowed;
+- licence period, conditions and any fees; and
+- any termination or revocation conditions.
+
+A valid authorisation grants only the rights it expressly specifies. Any
+right not granted remains reserved. Requests and informal communications are
+not approval. Unless the written authorisation expressly states otherwise,
+licences are non-exclusive, non-transferable and non-sublicensable.
+
+4. ADDITIONAL AMVERSE AUTHORISATION REQUIRED
+
+This licence DOES NOT grant permission to scrape, crawl, systematically
+extract, use a restricted API, copy, republish, redistribute or resell data
+from AMVerse (https://amverse.co). The holder of relevant AMVerse rights must
+separately authorise uses for which its terms or the law require approval.
+
+A prospective operator may request permission directly from AMVerse's owner,
+or may ask the Licensor to contact AMVerse on their behalf. The Licensor's
+agreement to make an introduction or communicate a request is NOT equivalent
+to permission from AMVerse. For activities requiring both the Licensor's
+permission and AMVerse's permission, BOTH approvals must be obtained before
+use. Other rights holders' approvals may also be required.
+
+5. CONDITIONS OF ANY AUTHORISED USE
+
+Unless an individually agreed written licence expressly provides otherwise,
+an authorised Licensee must:
+
+(a) stay within the approved purpose, number of deployments and distribution
+    scope;
+(b) comply with all applicable law and the terms of any affected service;
+(c) retain applicable copyright notices and identify significant changes;
+(d) keep credentials and API keys confidential and not share unassigned keys;
+(e) avoid excessive traffic, circumvention of security controls or misuse of
+    third-party systems;
+(f) refrain from claiming endorsement or ownership of third-party brands,
+    images, values or content; and
+(g) comply with any written data-handling, attribution and rate-limit terms
+    agreed with the relevant rights holder.
+
+6. EXCLUDED MATERIAL AND OTHER LICENCES
+
+No grant is made under this licence for third-party code, datasets, game
+assets, images, trademarks, pet names or other material unless the Licensor
+actually controls the rights needed to grant that permission. Those materials
+remain governed by their owners' rights and any applicable licences or legal
+exceptions. If a component already has an independent licence, that licence
+continues to govern that component. Nothing here overrides an existing valid
+open-source licence or retroactively revokes rights granted under it.
+
+7. BREACH, TERMINATION AND RESERVATION OF REMEDIES
+
+Material breach of the conditions of an individually granted licence may
+result in termination to the extent permitted by that licence and applicable
+law, subject to any applicable notice or cure requirement. Following valid
+termination, the Licensee must stop any activity no longer authorised and
+comply with lawful obligations concerning copies and confidential material.
+
+The Licensor may seek appropriate lawful relief for infringement or breach
+of rights it owns or is entitled to enforce, including notices, valid
+hosting-platform complaints, injunctions, damages and recoverable costs where
+supported by the facts and law. No predetermined fine or automatic damages
+award arises solely from this licence. Third-party rights holders retain
+their own enforcement powers.
+
+8. WARRANTY DISCLAIMER AND LIABILITY
+
+To the extent permitted by applicable law, Covered Code is provided "AS IS"
+without voluntary warranties of merchantability, accuracy, availability,
+non-infringement of third-party material or fitness for a particular purpose.
+Nothing in this licence excludes or limits liabilities that cannot lawfully
+be excluded or limited.
+
+9. DISPUTE RESOLUTION AND ARBITRATION
+
+Where reasonable, parties should first attempt good-faith written discussion
+of disputes arising from a specific written licence. Arbitration is available
+only where the relevant parties separately enter into a valid arbitration
+agreement. This public licence text alone does not require non-licensees or
+visitors to arbitrate. Any arbitration agreement may specify England and Wales
+as the seat, with applicable arbitration law, including the Arbitration Act
+1996 as amended. In the absence of such an agreement, competent courts and
+other lawful procedures remain available. Urgent lawful interim relief is
+not excluded.
+
+10. GOVERNING LAW AND SEVERABILITY
+
+An individual written licence may specify the governing law. If that licence
+expressly adopts this clause and does not state otherwise, the intended law
+is that of England and Wales, subject to mandatory law. An invalid provision
+is severable to the extent permitted by law, without expanding the rights
+granted in other provisions.
+
+11. RELATED NOTICE
+
+Read legal.txt in the repository for the acceptable-use policy, request
+procedure, third-party rights, enforcement information and further context.
+legal.txt does not itself enlarge the permission granted by this LICENSE.
+A separately signed agreement, where valid and applicable, governs its own
+subject matter in the event of an inconsistency.
+
+END OF LICENCE
