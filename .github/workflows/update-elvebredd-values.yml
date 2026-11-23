@@ -1,63 +1,65 @@
-name: Update Roblox Values (AMVerse)
+name: Update Elvebredd Values (Owner Snapshot)
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'
+    # Owner's snapshot is generated at 00:00 and 12:00 UTC.
+    # Allow time for it to publish before we fetch it.
+    - cron: '35 1,13 * * *'
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-amverse-values
+  group: update-elve-values
   cancel-in-progress: false
 
 jobs:
   update-values:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 12
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Validate updater and run safety tests
+      - name: Run validation tests
         run: |
           node --check update_elvebredd_values.js
+          node --check scripts/scrape-elve.js
           node --test test_updater.js
-      - name: Install browser
-        run: |
-          npm install --no-save --no-package-lock playwright
-          npx playwright install --with-deps chromium
-      - name: Fetch AMVerse public values (no API key)
-        env:
-          MIN_MATCHED_ITEMS: '350'
-          MIN_PET_COVERAGE: '0.45'
-          MAX_SEARCH_QUERIES: '3800'
-          MAX_FETCH_MINUTES: '32'
+      - name: Import owner-published Elvebredd values
         run: node update_elvebredd_values.js
-      - name: Upload diagnostics when failed
+      - name: Validate updated DB
+        run: node scripts/verify-db.js
+      - name: Upload diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: amverse-fetch-diagnostics
-          path: amverse_fetch_diagnostics.json
+          name: elve-update-diagnostics
+          path: elve-update-diagnostics.json
           if-no-files-found: ignore
-          retention-days: 7
-      - name: Verify output schema
-        run: |
-          node -e 'const d=JSON.parse(require("fs").readFileSync("values_elvebredd","utf8"));if(!d.items||Object.keys(d.items).length<3000)throw Error("Database is incomplete");for(const v of Object.values(d.items)){for(const k of ["NP","F","R","FR","N","NF","NR","NFR","M","MF","MR","MFR"]){if(typeof v[k]!=="number")throw Error("Missing variant "+k)}}console.log("Validated",Object.keys(d.items).length,"items")'
-      - name: Commit value updates
+          retention-days: 14
+      - name: Commit only when values change
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- values_elvebredd
-          if git diff --cached --quiet; then
-            echo 'No value changes to commit.'
-          else
+          cp values_elvebredd "$RUNNER_TEMP/values_elvebredd"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP/values_elvebredd" values_elvebredd
+            git add -- values_elvebredd
+            if git diff --cached --quiet; then
+              echo 'No value changes to commit.'
+              exit 0
+            fi
             git diff --cached --check
-            git commit -m 'Update Elvebredd values via AMVerse'
-            git push
-          fi
+            git commit -m 'Update Elvebredd values from owner snapshot'
+            git push origin HEAD:main && exit 0
+            echo 'Push failed, retrying...'
+            sleep 5
+          done
+          exit 1

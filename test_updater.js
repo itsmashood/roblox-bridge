@@ -1,67 +1,109 @@
 'use strict';
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { numericValue, nameKey, parseTableRow, extractJsonRecords, mergeCandidate, prepareUpdate } = require('./update_elvebredd_values');
-
-test('parses values without mistaking badges/deltas or AMVGG amounts for Elvebredd', () => {
-  assert.equal(numericValue('1,209.5+3'),1209.5);
-  assert.equal(numericValue('170−1'),170);
-  assert.equal(numericValue('0.945+0.005'),0.945);
-  assert.equal(numericValue('–'),null);
-  assert.equal(numericValue('€35.91'),null);
+const fs = require('node:fs');
+const path = require('node:path');
+const {validateFeed,mergeSnapshot,currentVariant,normalizedName,PET_VARIANTS} = require('./update_elvebredd_values');
+const {parsePets} = require('./scripts/scrape-elve');
+const original = JSON.parse(fs.readFileSync(path.join(__dirname,'values_elvebredd'),'utf8'));
+const map = {
+  NP:'rvalueNopotion',F:'rvalueFly',R:'rvalueRide',FR:'rvalueFlyRide',
+  N:'nvalueNopotion',NF:'nvalueFly',NR:'nvalueRide',NFR:'nvalueFlyRide',
+  M:'mvalueNopotion',MF:'mvalueFly',MR:'mvalueRide',MFR:'mvalueFlyRide'
+};
+function snapshot() {
+  const pets=[];
+  for (const it of Object.values(original.items)) {
+    if (!it.displayName || /^(nan|none)$/i.test(it.displayName)) continue;
+    const raw={id:it.valueMeta.elvebreddId,name:it.displayName,
+      image:it.valueMeta.image||null,rarity:it.valueMeta.rarity||null,
+      rvalue:it.FR,nvalue:it.category==='pets'?it.NFR:null,
+      mvalue:it.category==='pets'?it.MFR:null};
+    if(it.category==='pets')for(const [k,v] of Object.entries(map))raw[v]=it[k];
+    pets.push(raw);
+  }
+  return {source:'https://elvebredd.com/calculator',scrapedAt:new Date().toISOString(),count:pets.length,pets};
+}
+test('current owner format maps all 12 pet variants correctly',()=>{
+  const h={rvalue:119,nvalue:294,mvalue:1095,rvalueNopotion:117.5,rvalueFly:117.9,rvalueRide:117.75,rvalueFlyRide:119,
+    nvalueNopotion:306,nvalueFly:295,nvalueRide:295,nvalueFlyRide:294,mvalueNopotion:1212.5,mvalueFly:1105,mvalueRide:1105,mvalueFlyRide:1095};
+  assert.equal(currentVariant(h,'NP'),117.5);assert.equal(currentVariant(h,'M'),1212.5);
+  assert.equal(currentVariant(h,'FR'),119);assert.equal(currentVariant(h,'MFR'),1095);
 });
-test('parses AMVerse public table: E, A and euros columns for all three forms', () => {
-  const row=parseTableRow({name:'Hedgehog',href:'/pet/hedgehog',cells:[
-    'Hedgehog','ultra rare','ultra rare',
-    '114.5+3','0.67+0.015','€35.91','306+1','1.65','–','1209.5+3','6.45','–'
-  ]});
-  assert.deepEqual([row.regular,row.neon,row.mega],[114.5,306,1209.5]);
-  assert.equal(row.slug,'hedgehog');
+test('name normalization does not lose item identity',()=>{
+  assert.equal(normalizedName('2026 Birthday Butterfly'),normalizedName('2026 Birthday  Butterfly'));
+  assert.equal(normalizedName('Crow’s Nest'),normalizedName('Crows Nest'));
 });
-test('extracts only explicit Elvebredd JSON fields and ignores AMVGG scale', () => {
-  const data={data:{pets:[
-    {name:'Bat Dragon',elvebredd:{regular:1014,neon:2483,mega:7397},amvgg:{regular:5.58}},
-    {name:'Shadow Dragon',elvebreddRegular:854,elvebreddNeon:2028,elvebreddMega:5320},
-    {name:'Fake',amvgg:{regular:800,neon:1000}}
-  ]}};
-  const rows=extractJsonRecords(data);
-  assert.equal(rows.length,2);
-  assert.equal(rows[0].regular,1014);
-  assert.equal(rows[1].mega,5320);
+test('accepts a full, fresh source snapshot',()=>{
+  const feed=snapshot();assert.ok(feed.pets.length>3000);
+  assert.equal(validateFeed(feed).sourceCount,feed.pets.length);
 });
-test('public HTML rows override indirect JSON values', () => {
-  const records = new Map();
-  mergeCandidate(records,{name:'Bat Dragon',regular:100,neon:null,mega:null,origin:'public-json'});
-  mergeCandidate(records,{name:'Bat Dragon',regular:1014,neon:2483,mega:7397,origin:'public-table'});
-  assert.equal(records.get('bat dragon').regular,1014);
+test('rejects stale source before DB write',()=>{
+  const feed=snapshot();feed.scrapedAt='2026-01-01T00:00:00.000Z';
+  assert.throws(()=>validateFeed(feed),/stale\/future/);
 });
-test('preserves untouched variants and existing IDs and fields', () => {
-  const item={displayName:'Hedgehog',category:'pets',source:'elvebredd',
-    NP:102.5,F:102.9,R:102.75,FR:104,N:304,NF:293,NR:293,NFR:292,M:1192.5,MF:1100,MR:1100,MFR:1090,
-    valueMeta:{elvebreddId:0,source:{NP:'elvebredd'},notes:['existing']},aliases:[]};
-  const db={version:5,updatedAt:'2026-11-18T00:42:14.242Z',items:{hedgehog:item}};
-  const {db:next,stats}=prepareUpdate(db,[{name:'Hedgehog',regular:114.5,neon:306,mega:1209.5}],{minMatched:1,minPetCoverage:1});
-  assert.equal(stats.updatedFields,3);
-  assert.equal(next.items.hedgehog.NP,114.5);
-  assert.equal(next.items.hedgehog.N,306);
-  assert.equal(next.items.hedgehog.M,1209.5);
-  assert.equal(next.items.hedgehog.FR,104);
-  assert.equal(next.items.hedgehog.MFR,1090);
-  assert.equal(next.items.hedgehog.valueMeta.elvebreddId,0);
-  assert.equal(db.items.hedgehog.NP,102.5);
+test('rejects partial catalogues before any DB write',()=>{
+  const feed=snapshot();feed.pets=feed.pets.slice(0,50);
+  assert.throws(()=>mergeSnapshot(original,feed),/Source incomplete/);
 });
-test('keeps equivalent non-pet NP and legacy FR synchronized',()=>{
-  const db={items:{'safari egg':{displayName:'Safari Egg',category:'eggs',NP:250,FR:250,valueMeta:{}}}};
-  const {db:next}=prepareUpdate(db,[{name:'Safari Egg',regular:260,neon:null,mega:null}],{minMatched:1,minPetCoverage:0});
-  assert.equal(next.items['safari egg'].NP,260);
-  assert.equal(next.items['safari egg'].FR,260);
+test('rejects duplicate IDs in new data',()=>{
+  const feed=snapshot();feed.pets[3].id=feed.pets[2].id;
+  assert.throws(()=>mergeSnapshot(original,feed),/Malformed source/);
 });
-test('refuses partial extraction, original database unchanged',()=>{
-  const db={items:{'bat dragon':{displayName:'Bat Dragon',category:'pets',NP:1013}}};
-  assert.throws(()=>prepareUpdate(db,[],{minMatched:1,minPetCoverage:1}),/Safety check failed/);
-  assert.equal(db.items['bat dragon'].NP,1013);
+test('full database roundtrip preserves 12 variants for all existing records',()=>{
+  const feed=snapshot();
+  const {db:result,stats}=mergeSnapshot(original,feed);
+  assert.equal(stats.matched,3473);
+  assert.equal(stats.matchedPets,807);
+  assert.equal(stats.insertedPets,0);
+  assert.equal(Object.keys(result.items).length,3475);
+  assert.equal(result.items.hedgehog.MFR,original.items.hedgehog.MFR);
+  for(const it of Object.values(result.items))for(const k of PET_VARIANTS)assert.equal(typeof it[k],'number');
 });
-test('matches punctuation variants safely',()=>{
-  assert.equal(nameKey('2021 Uplift Butterfly'),nameKey('2021  Uplift Butterfly'));
-  assert.equal(nameKey("Crow's Nest"),nameKey('Crows Nest'));
+test('live-style changed prices update by ID; nonpets retain all variants',()=>{
+  const feed=snapshot();
+  const hedge=feed.pets.find(p=>p.id===0);hedge.rvalueNopotion=117.5;hedge.mvalueNopotion=1212.5;
+  const ribbon=feed.pets.find(p=>p.id===1140);ribbon.rvalue=1.25;
+  const {db:result,stats}=mergeSnapshot(original,feed);
+  assert.ok(stats.changedFields>=4);
+  assert.equal(result.items.hedgehog.NP,117.5);
+  assert.equal(result.items.hedgehog.M,1212.5);
+  assert.equal(result.items['1 ribbon'].NP,1.25);
+  assert.equal(result.items['1 ribbon'].FR,1.25);
+  assert.equal(result.items.hedgehog.MFR,original.items.hedgehog.MFR);
+  assert.equal(original.items.hedgehog.NP,102.5);
+});
+test('new well-formed pet is inserted, unclassified new accessory is not',()=>{
+  const feed=snapshot();
+  feed.pets.push({id:90001,name:'Example New Pet',rarity:'legendary',rvalue:10,nvalue:20,mvalue:30,
+    rvalueNopotion:10,rvalueFly:11,rvalueRide:11,rvalueFlyRide:12,
+    nvalueNopotion:20,nvalueFly:21,nvalueRide:21,nvalueFlyRide:22,
+    mvalueNopotion:30,mvalueFly:31,mvalueRide:31,mvalueFlyRide:32});
+  feed.pets.push({id:90002,name:'New Toy',rvalue:0.1});
+  const {db:result,stats}=mergeSnapshot(original,feed);
+  assert.equal(stats.insertedPets,1);
+  assert.ok(stats.unclassifiedNewItems>=1);
+  assert.equal(result.items['example new pet'].category,'pets');
+  assert.equal(result.items['example new pet'].MFR,32);
+  assert.equal(result.items['new toy'],undefined);
+  assert.equal(result.itemCount,3476);
+});
+test('individual wild outlier ignored but normal updates accepted',()=>{
+  const feed=snapshot();const hedge=feed.pets.find(p=>p.id===0);
+  hedge.rvalueNopotion=999999;hedge.rvalueRide=130;
+  const {db:result,stats}=mergeSnapshot(original,feed);
+  assert.equal(result.items.hedgehog.NP,original.items.hedgehog.NP);
+  assert.equal(result.items.hedgehog.R,130);
+  assert.ok(stats.skippedOutliers.length>0);
+});
+test('owner Next.js flight-parser can find renamed pet collection',()=>{
+  const rows=[{id:0,name:'Hedgehog',rvalue:119,nvalue:294,mvalue:1095,'rvalue - nopotion':117.5},
+    {id:1,name:'African Wild Dog',rvalue:159,nvalue:600,mvalue:2050}];
+  const flightLine='0:'+JSON.stringify({nested:{catalog:{pets:rows}}})+'\n';
+  const escaped=JSON.stringify(flightLine);
+  const html=`<script>self.__next_f.push([1,${escaped}])</script>`;
+  const pets=parsePets(html);
+  assert.equal(pets.length,2);
+  assert.equal(pets[0].rvalueNopotion,117.5);
+  assert.equal(pets[1].name,'African Wild Dog');
 });

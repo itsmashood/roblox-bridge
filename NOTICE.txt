@@ -1,0 +1,13 @@
+Third-party attribution — Elvebredd extraction method
+
+The optional direct-scraping file scripts/scrape-elve.js has been adapted from
+https://github.com/xjacksssss/elve-values-public
+Specifically from scripts/scrape-elve.js and .github/workflows/scrape-elve.yml.
+
+The repository owner xjacksssss shared that project for integration with this
+updater. The hosted public values snapshot from that project is used as the
+scheduled source.
+
+The rest of this repository's licensing restrictions do not assert ownership
+of the original work, the Elvebredd website, AMVerse, or third-party data.
+The original owner retains their applicable rights.

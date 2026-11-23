@@ -1,0 +1,79 @@
+name: Manual Direct Elvebredd Scrape (Optional)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-elve-values
+  cancel-in-progress: false
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      flaresolverr:
+        image: ghcr.io/flaresolverr/flaresolverr:latest
+        ports:
+          - 8191:8191
+        env:
+          LOG_LEVEL: info
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate scripts
+        run: |
+          node --test test_updater.js
+          node --check scripts/scrape-elve.js
+      - name: Wait for FlareSolverr
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8191/health && exit 0
+            sleep 2
+          done
+          exit 1
+      - name: Extract using owner-shared parser
+        env:
+          FLARESOLVERR_URL: http://localhost:8191/v1
+          OUTPUT_FILE: data/elve-values.json
+          MIN_PETS: '3000'
+        run: node scripts/scrape-elve.js
+      - name: Import into existing 12-variant database
+        env:
+          INPUT_FILE: data/elve-values.json
+        run: node update_elvebredd_values.js
+      - name: Validate updated DB
+        run: node scripts/verify-db.js
+      - name: Upload diagnostics on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: direct-elve-diagnostics
+          path: elve-update-diagnostics.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Commit updated DB
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          cp values_elvebredd "$RUNNER_TEMP/values_elvebredd"
+          for attempt in 1 2 3; do
+            git fetch origin main
+            git reset --hard origin/main
+            cp "$RUNNER_TEMP/values_elvebredd" values_elvebredd
+            git add -- values_elvebredd
+            if git diff --cached --quiet; then
+              echo 'No changes.'
+              exit 0
+            fi
+            git diff --cached --check
+            git commit -m 'Update Elvebredd values from direct scrape'
+            git push origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1
