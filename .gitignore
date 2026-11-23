@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.tmp-*
+amverse_fetch_diagnostics.json
+elvebredd_fetch_diagnostics.json
+elvebredd_diagnostic_chunks/
+playwright-report/
+test-results/

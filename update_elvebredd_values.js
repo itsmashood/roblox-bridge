@@ -1,1334 +1,423 @@
-const fs = require("fs/promises");
+/**
+ * Xyneria / Roblox Bridge: AMVerse public-page value updater.
+ *
+ * No API key. Reads publicly displayed Elvebredd Regular / Neon / Mega values
+ * through AMVerse's values page. Preserves the existing 12-variant DB schema.
+ *
+ * IMPORTANT: this is a public-page extractor, not an official AMVerse API.
+ * Obtain permission for automated extraction and reuse before enabling.
+ */
+'use strict';
 
-const ELVEBREDD_URL = process.env.ELVEBREDD_URL || "https://elvebredd.com/adopt-me-calculator";
-const OUT_FILE = process.env.OUT_FILE || "values_elvebredd";
-const MIN_ITEMS = Number(process.env.MIN_ITEMS || 100);
-const MIN_PREVIOUS_ITEM_RATIO = Number(process.env.MIN_PREVIOUS_ITEM_RATIO || 0.90);
-const MIN_PREVIOUS_OVERLAP_RATIO = Number(process.env.MIN_PREVIOUS_OVERLAP_RATIO || 0.85);
-const MIN_PREVIOUS_NONZERO_RATIO = Number(process.env.MIN_PREVIOUS_NONZERO_RATIO || 0.85);
-const BROWSER_WAIT_MS = Number(process.env.BROWSER_WAIT_MS || 12000);
-const DIAGNOSTICS_FILE = process.env.DIAGNOSTICS_FILE || "elvebredd_fetch_diagnostics.json";
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const { performance } = require('node:perf_hooks');
 
-const VARIANTS = ["NP", "F", "R", "FR", "N", "NF", "NR", "NFR", "M", "MF", "MR", "MFR"];
+const DB_PATH = process.env.OUT_FILE || path.join(__dirname, 'values_elvebredd');
+const SOURCE_URL = 'https://amverse.co/values';
+const DIAGNOSTICS_PATH = process.env.DIAGNOSTICS_FILE || path.join(__dirname, 'amverse_fetch_diagnostics.json');
+const HEADLESS = process.env.HEADLESS !== 'false';
+const DRY_RUN = process.env.DRY_RUN === 'true';
+const MIN_MATCHED_ITEMS = Number(process.env.MIN_MATCHED_ITEMS || 350);
+const MIN_PET_COVERAGE = Number(process.env.MIN_PET_COVERAGE || 0.45);
+const MAX_SEARCH_QUERIES = Number(process.env.MAX_SEARCH_QUERIES || 3800);
+const MAX_FETCH_MINUTES = Number(process.env.MAX_FETCH_MINUTES || 32);
+const DEBUG = process.env.DEBUG === 'true';
 
-const EXPLICIT_PET_TAGS = new Set([
-  "pet",
-  "pets"
-]);
-
-const EXPLICIT_NON_PET_TAGS = new Set([
-  "egg",
-  "eggs",
-  "food",
-  "foods",
-  "toy",
-  "toys",
-  "stroller",
-  "strollers",
-  "vehicle",
-  "vehicles",
-  "gift",
-  "gifts",
-  "pet wear",
-  "petwear",
-  "pet wears",
-  "wing",
-  "wings",
-  "potion",
-  "potions",
-  "accessory",
-  "accessories"
-]);
-
-const PET_SPECIFIC_VALUE_KEYS = [
-  "rvalue - nopotion",
-  "rvalue-nopotion",
-  "rvalue_nopotion",
-  "rvalue no potion",
-  "rvalue nopotion",
-  "npvalue",
-  "no potion",
-  "nopotion",
-  "noPotionValue",
-
-  "rvalue - fly",
-  "rvalue-fly",
-  "rvalue_fly",
-  "rvalue fly",
-  "flyvalue",
-  "fly value",
-
-  "rvalue - ride",
-  "rvalue-ride",
-  "rvalue_ride",
-  "rvalue ride",
-  "ridevalue",
-  "ride value",
-
-  "nvalue",
-  "neon value",
-  "neonValue",
-  "nvalue - nopotion",
-  "nvalue-nopotion",
-  "nvalue_nopotion",
-  "nvalue no potion",
-  "nvalue nopotion",
-  "neon no potion",
-  "neonNoPotionValue",
-  "nvalue - fly",
-  "nvalue-fly",
-  "nvalue_fly",
-  "neon fly",
-  "neonFlyValue",
-  "nvalue - ride",
-  "nvalue-ride",
-  "nvalue_ride",
-  "neon ride",
-  "neonRideValue",
-  "nvalue - fly ride",
-  "nvalue - fr",
-  "nvalue-fr",
-  "nvalue_fr",
-  "neon fly ride",
-  "neonFlyRideValue",
-  "nfrvalue",
-
-  "mvalue",
-  "mega value",
-  "megaValue",
-  "mvalue - nopotion",
-  "mvalue-nopotion",
-  "mvalue_nopotion",
-  "mvalue no potion",
-  "mvalue nopotion",
-  "mega no potion",
-  "megaNoPotionValue",
-  "mvalue - fly",
-  "mvalue-fly",
-  "mvalue_fly",
-  "mega fly",
-  "megaFlyValue",
-  "mvalue - ride",
-  "mvalue-ride",
-  "mvalue_ride",
-  "mega ride",
-  "megaRideValue",
-  "mvalue - fly ride",
-  "mvalue - fr",
-  "mvalue-fr",
-  "mvalue_fr",
-  "mega fly ride",
-  "megaFlyRideValue",
-  "mfrvalue"
-];
-
-const KNOWN_NON_PET_SENTINELS = [
-  "royal egg",
-  "retired egg",
-  "ride a pet potion forever",
-  "choosy potion"
-];
-
-function normalizeName(value) {
-  return String(value || "")
-    .toLowerCase()
-    .replace(/&amp;/g, "&")
-    .replace(/[^a-z0-9]+/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+function nameKey(v) {
+  return String(v || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[’‘']/g, '')
+    .replace(/&/g, 'and')
+    .replace(/[^a-z0-9]+/gi, ' ')
+    .toLowerCase().trim().replace(/\s+/g, ' ');
 }
-
-function cleanName(value) {
-  return String(value || "")
-    .replace(/\\u0026/g, "&")
-    .replace(/&amp;/g, "&")
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/\\\//g, "/")
-    .replace(/\s+/g, " ")
-    .trim();
+function numericValue(input) {
+  if (input === null || input === undefined || typeof input === 'boolean') return null;
+  if (typeof input === 'number') return Number.isFinite(input) && input >= 0 ? input : null;
+  const s = String(input).trim();
+  if (!s || /^[\-—–−\s]+$/.test(s) || /^(null|none|n\/a|undefined)$/i.test(s)) return null;
+  // A table cell may say `170−1` (value + an hourly delta). Keep only the leading value.
+  const m = s.match(/^\s*([\d,]+(?:\.\d+)?|\.\d+)(?=$|\s|[+−–\-(])/);
+  if (!m) return null;
+  const n = Number(m[1].replace(/,/g, ''));
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }
-
-function toNumber(value) {
-  if (value === null || value === undefined) return 0;
-  if (typeof value === "number") return Number.isFinite(value) && value > 0 ? value : 0;
-
-  const text = String(value).replace(/,/g, "").trim();
-  if (!text || text === "false" || text === "true" || text.toLowerCase() === "nan") return 0;
-
-  const match = text.match(/-?\d+(?:\.\d+)?/);
-  if (!match) return 0;
-
-  const n = Number(match[0]);
-  return Number.isFinite(n) && n > 0 ? n : 0;
+function petSlugFromHref(url) {
+  const m = String(url || '').match(/\/pet\/([^/?#]+)/i);
+  return m ? decodeURIComponent(m[1]).replace(/-/g, ' ') : null;
 }
-
-function roundValue(value) {
-  if (!Number.isFinite(value) || value <= 0) return 0;
-  return Math.round(value * 1000000) / 1000000;
-}
-
-function getCaseInsensitive(obj, keys) {
-  if (!obj || typeof obj !== "object") return undefined;
-
-  for (const key of keys) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) return obj[key];
-  }
-
-  const normalizedWanted = keys.map(k => normalizeName(k));
-  for (const [key, value] of Object.entries(obj)) {
-    const nk = normalizeName(key);
-    if (normalizedWanted.includes(nk)) return value;
-  }
-
-  return undefined;
-}
-
-function firstPositiveNumber(obj, keys) {
-  for (const key of keys) {
-    const value = getCaseInsensitive(obj, [key]);
-    const n = toNumber(value);
-    if (n > 0) return n;
-  }
-  return 0;
-}
-
-function itemNameFromElvebredd(raw) {
-  return cleanName(
-    raw.name ||
-    raw.displayName ||
-    raw.display_name ||
-    raw.petName ||
-    raw.itemName ||
-    raw.title ||
-    raw.label ||
-    raw.d ||
-    ""
-  );
-}
-
-function buildAliases(displayName, key) {
-  const aliases = new Set();
-  const normalized = normalizeName(displayName);
-
-  if (normalized && normalized !== key) aliases.add(normalized);
-
-  const shorthandPairs = [
-    [" dragon", " drag"],
-    [" unicorn", " uni"],
-    [" kangaroo", " kanga"],
-    [" turtle", " turt"],
-    [" tyrannosaurus rex", " t rex"],
-    [" t rex", " trex"],
-    [" strawberry shortcake bat dragon", " ssbd"],
-    [" chocolate chip bat dragon", " ccbd"]
-  ];
-
-  for (const [from, to] of shorthandPairs) {
-    if (normalized.includes(from)) aliases.add(normalized.replace(from, to));
-  }
-
-  return Array.from(aliases).filter(Boolean);
-}
-
-function makeBlankItem(displayName, raw) {
-  const category = cleanName(raw.type || raw.category || raw.rarity || raw.kind || "unknown").toLowerCase() || "unknown";
-
+function parseTableRow(raw) {
+  const cells = raw.cells || [];
+  // In AMVerse's public table, the last 9 columns are E, A, € for each of
+  // Regular, Neon and Mega. E is Elvebredd; A is AMVGG (different scale).
+  if (!raw.name || cells.length < 9) return null;
+  const tail = cells.slice(-9);
+  const regular = numericValue(tail[0]);
+  const neon = numericValue(tail[3]);
+  const mega = numericValue(tail[6]);
+  if ([regular, neon, mega].every(v => v === null)) return null;
   return {
-    displayName,
-    category,
-    source: "elvebredd",
-    NP: 0,
-    F: 0,
-    R: 0,
-    FR: 0,
-    N: 0,
-    NF: 0,
-    NR: 0,
-    NFR: 0,
-    M: 0,
-    MF: 0,
-    MR: 0,
-    MFR: 0,
-    demand: {},
-    aliases: [],
-    valueMeta: {
-      source: {},
-      confidence: {},
-      originalRaw: {},
-      notes: []
-    }
+    name: String(raw.name).trim(),
+    slug: petSlugFromHref(raw.href),
+    regular, neon, mega,
+    origin: 'public-table'
   };
 }
-
-function setVariant(item, variant, value, sourceKey, confidence) {
-  const n = roundValue(value);
-  if (!VARIANTS.includes(variant) || n <= 0) return false;
-
-  item[variant] = n;
-  item.valueMeta.source[variant] = sourceKey;
-  item.valueMeta.confidence[variant] = confidence;
-  item.valueMeta.originalRaw[variant] = value;
-  return true;
-}
-
-function classificationTags(raw) {
-  const fields = [
-    raw.type,
-    raw.category,
-    raw.kind,
-    raw.itemType,
-    raw.item_type,
-    raw.categoryName,
-    raw.category_name,
-    raw.group,
-    raw.section
-  ];
-
-  return Array.from(
-    new Set(fields.map(normalizeName).filter(Boolean))
-  );
-}
-
-function hasPetSpecificValueEvidence(raw) {
-  return firstPositiveNumber(raw, PET_SPECIFIC_VALUE_KEYS) > 0;
-}
-
-function strongNonPetNameReason(displayName) {
-  const name = normalizeName(displayName);
-
-
-
-  if (name === "egg" || name.endsWith(" egg")) return "name is an egg item";
-  if (/(^| )potion( |$)/.test(name)) return "name contains standalone 'potion'";
-
+function field(o, names) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  for (const k of names) {
+    if (Object.prototype.hasOwnProperty.call(o, k)) {
+      const n = numericValue(o[k]);
+      if (n !== null) return n;
+    }
+  }
   return null;
 }
-
-function classifyElvebreddItem(raw, displayName) {
-  const tags = classificationTags(raw);
-  const explicitPetTag = tags.find(tag => EXPLICIT_PET_TAGS.has(tag)) || null;
-  const explicitNonPetTag = tags.find(tag => EXPLICIT_NON_PET_TAGS.has(tag)) || null;
-  const petSpecificValueEvidence = hasPetSpecificValueEvidence(raw);
-  const nameNonPetReason = strongNonPetNameReason(displayName);
-
-
-
-  if (nameNonPetReason) {
-    if (petSpecificValueEvidence) {
-      return {
-        kind: "unknown",
-        reason: `${nameNonPetReason}, but pet-specific value fields were also present`
-      };
-    }
-
-    return {
-      kind: "nonpet",
-      reason: nameNonPetReason
-    };
-  }
-
-  if (explicitNonPetTag) {
-    if (petSpecificValueEvidence) {
-      return {
-        kind: "unknown",
-        reason: `non-pet tag '${explicitNonPetTag}' conflicted with pet-specific value fields`
-      };
-    }
-
-    return {
-      kind: "nonpet",
-      reason: `explicit Elvebredd category/type '${explicitNonPetTag}'`
-    };
-  }
-
-  if (explicitPetTag || petSpecificValueEvidence) {
-    return {
-      kind: "pet",
-      reason: explicitPetTag
-        ? `explicit Elvebredd category/type '${explicitPetTag}'`
-        : "pet-specific potion/neon/mega value fields were present"
-    };
-  }
-
-  return {
-    kind: "unknown",
-    reason: tags.length > 0
-      ? `unrecognized category/type tag(s): ${tags.join(", ")}`
-      : "no reliable pet/non-pet classification evidence"
+function extractEmbeddedRecord(o) {
+  if (!o || typeof o !== 'object' || Array.isArray(o)) return null;
+  const name = o.name || o.petName || o.pet_name || o.displayName || o.display_name || o.itemName;
+  if (!name || typeof name !== 'string' || name.length > 160) return null;
+  const candidates = [
+    o.elvebredd, o.elvebreddValues, o.elvebredd_values,
+    o.values?.elvebredd, o.values?.Elvebredd,
+    o.value?.elvebredd, o.sources?.elvebredd,
+    o.prices?.elvebredd, o.eValues
+  ].filter(x => x && typeof x === 'object');
+  const direct = {
+    regular: field(o, ['elvebredd_regular', 'elvebreddRegular', 'elvebreddNormal', 'elvebredd_normal', 'e_regular', 'eRegular']),
+    neon: field(o, ['elvebredd_neon', 'elvebreddNeon', 'e_neon', 'eNeon']),
+    mega: field(o, ['elvebredd_mega', 'elvebreddMega', 'e_mega', 'eMega'])
   };
-}
-
-function copyVariantPreservingMetadata(item, targetVariant, donorVariant, note) {
-  if ((item[targetVariant] || 0) > 0) return false;
-  if ((item[donorVariant] || 0) <= 0) return false;
-
-  const donorSource = item.valueMeta.source[donorVariant] || `elvebredd:${donorVariant.toLowerCase()}`;
-  const donorConfidence = item.valueMeta.confidence[donorVariant] || "direct";
-  const donorOriginalRaw = Object.prototype.hasOwnProperty.call(item.valueMeta.originalRaw, donorVariant)
-    ? item.valueMeta.originalRaw[donorVariant]
-    : item[donorVariant];
-
-  item[targetVariant] = item[donorVariant];
-  item.valueMeta.source[targetVariant] = donorSource;
-  item.valueMeta.confidence[targetVariant] = donorConfidence;
-  item.valueMeta.originalRaw[targetVariant] = donorOriginalRaw;
-
-  if (note) item.valueMeta.notes.push(note);
-  return true;
-}
-
-function convertElvebreddItem(raw) {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-
-  const displayName = itemNameFromElvebredd(raw);
-  if (!displayName || displayName.length < 2) return null;
-
-  const key = normalizeName(displayName);
-  if (!key) return null;
-
-  const item = makeBlankItem(displayName, raw);
-  item.aliases = buildAliases(displayName, key);
-  item.valueMeta.elvebreddId = raw.id ?? raw.petId ?? raw.itemId ?? null;
-  item.valueMeta.status = raw.status || null;
-  item.valueMeta.rarity = raw.rarity || null;
-  item.valueMeta.image = raw.image || null;
-
-  const mapping = {
-    NP: [
-      "rvalue - nopotion",
-      "rvalue-nopotion",
-      "rvalue_nopotion",
-      "rvalue no potion",
-      "rvalue nopotion",
-      "npvalue",
-      "no potion",
-      "nopotion",
-      "noPotionValue"
-    ],
-    F: [
-      "rvalue - fly",
-      "rvalue-fly",
-      "rvalue_fly",
-      "rvalue fly",
-      "flyvalue",
-      "fly value"
-    ],
-    R: [
-      "rvalue - ride",
-      "rvalue-ride",
-      "rvalue_ride",
-      "rvalue ride",
-      "ridevalue",
-      "ride value"
-    ],
-
-
-
-
-
-
-
-    FR: [
-      "rvalue - fly ride",
-      "rvalue - fr",
-      "rvalue-fr",
-      "rvalue_fr",
-      "regular value",
-      "regularValue",
-      "frvalue",
-      "fly ride",
-      "flyride",
-      "value",
-      "rvalue"
-    ],
-
-
-
-
-    N: [
-      "nvalue - nopotion",
-      "nvalue-nopotion",
-      "nvalue_nopotion",
-      "nvalue no potion",
-      "nvalue nopotion",
-      "neon no potion",
-      "neonNoPotionValue"
-    ],
-    NF: [
-      "nvalue - fly",
-      "nvalue-fly",
-      "nvalue_fly",
-      "neon fly",
-      "neonFlyValue"
-    ],
-    NR: [
-      "nvalue - ride",
-      "nvalue-ride",
-      "nvalue_ride",
-      "neon ride",
-      "neonRideValue"
-    ],
-    // FIX: no idea what i did here
-
-
-
-
-
-    NFR: [
-      "nvalue - fly ride",
-      "nvalue - fr",
-      "nvalue-fr",
-      "nvalue_fr",
-      "neon fly ride",
-      "neonFlyRideValue",
-      "nfrvalue",
-      "nvalue"
-    ],
-
-
-    M: [
-      "mvalue - nopotion",
-      "mvalue-nopotion",
-      "mvalue_nopotion",
-      "mvalue no potion",
-      "mvalue nopotion",
-      "mega no potion",
-      "megaNoPotionValue"
-    ],
-    MF: [
-      "mvalue - fly",
-      "mvalue-fly",
-      "mvalue_fly",
-      "mega fly",
-      "megaFlyValue"
-    ],
-    MR: [
-      "mvalue - ride",
-      "mvalue-ride",
-      "mvalue_ride",
-      "mega ride",
-      "megaRideValue"
-    ],
-
-    MFR: [
-      "mvalue",
-      "mvalue - fly ride",
-      "mvalue - fr",
-      "mvalue-fr",
-      "mvalue_fr",
-      "mega fly ride",
-      "megaFlyRideValue",
-      "mfrvalue"
-    ]
-  };
-
-  let foundAny = false;
-
-  for (const [variant, keys] of Object.entries(mapping)) {
-    const value = firstPositiveNumber(raw, keys);
-    if (value > 0) {
-      setVariant(item, variant, value, `elvebredd:${keys[0]}`, "direct");
-      foundAny = true;
+  if (String(o.source || '').toLowerCase() === 'elvebredd') candidates.push(o);
+  for (const c of candidates) {
+    for (const [k, keys] of Object.entries({
+      regular: ['regular', 'normal', 'base', 'np', 'rvalue'],
+      neon: ['neon', 'nvalue', 'n'],
+      mega: ['mega', 'mega_neon', 'mvalue', 'm']
+    })) {
+      if (direct[k] === null) direct[k] = field(c, keys);
     }
   }
-
-  if (!foundAny) return null;
-
-  const classification = classifyElvebreddItem(raw, displayName);
-
-  if ((item.NP || 0) <= 0 && (item.FR || 0) > 0 && classification.kind === "nonpet") {
-    copyVariantPreservingMetadata(
-      item,
-      "NP",
-      "FR",
-      `NP copied from Elvebredd's regular rvalue for confirmed non-pet (${classification.reason}). FR was preserved for backwards compatibility.`
-    );
-  }
-
-  if ((item.NP || 0) <= 0 && (item.FR || 0) > 0) {
-    item.valueMeta.notes.push(
-      `NP was not exposed by Elvebredd and was not inferred because this item was not confidently classified as a non-pet (${classification.reason}).`
-    );
-  }
-
-  if ((item.NFR || 0) <= 0 && (item.N || 0) > 0) {
-    item.valueMeta.notes.push("NFR was not exposed separately by Elvebredd for this item, so it is left as 0/unknown.");
-  }
-
-  if ((item.MFR || 0) <= 0 && (item.M || 0) > 0) {
-    item.valueMeta.notes.push("MFR was not exposed separately by Elvebredd for this item, so it is left as 0/unknown.");
-  }
-
-  return { key, item };
+  if (Object.values(direct).every(x => x === null)) return null;
+  return {name, slug: o.slug || petSlugFromHref(o.url), ...direct, origin: 'public-json'};
 }
-
-function findMatchingBracket(text, openIndex, openChar, closeChar) {
-  let depth = 0;
-  let inString = false;
-  let quote = "";
-  let escaped = false;
-
-  for (let i = openIndex; i < text.length; i++) {
-    const ch = text[i];
-
-    if (inString) {
-      if (escaped) escaped = false;
-      else if (ch === "\\") escaped = true;
-      else if (ch === quote) inString = false;
-      continue;
+function extractJsonRecords(payload, limit = 200000) {
+  const out = [];
+  const queue = [payload];
+  const seen = new WeakSet();
+  let inspected = 0;
+  for (let cursor = 0; cursor < queue.length && inspected < limit; cursor++) {
+    const val = queue[cursor];
+    if (!val || typeof val !== 'object' || seen.has(val)) continue;
+    seen.add(val);
+    inspected++;
+    const pet = extractEmbeddedRecord(val);
+    if (pet) out.push(pet);
+    if (Array.isArray(val)) {
+      for (const o of val) if (o && typeof o === 'object') queue.push(o);
+    } else {
+      for (const [k,o] of Object.entries(val)) {
+        if (['history','snapshots','chart','priceHistory','transactions'].includes(k)) continue;
+        if (o && typeof o === 'object') queue.push(o);
+      }
     }
-
-    if (ch === '"' || ch === "'") {
-      inString = true;
-      quote = ch;
-      continue;
-    }
-
-    if (ch === openChar) depth++;
-    else if (ch === closeChar) depth--;
-
-    if (depth === 0) return i;
   }
-
-  return -1;
-}
-
-function tryJsonParse(text) {
-  try {
-    return JSON.parse(text);
-  } catch (_) {
-    return null;
-  }
-}
-
-function htmlDecodeMinimal(text) {
-  return String(text || "")
-    .replace(/&quot;/g, '"')
-    .replace(/&#34;/g, '"')
-    .replace(/&#x27;/g, "'")
-    .replace(/&#39;/g, "'")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">");
-}
-
-function unescapeTextLayer(text) {
-  let out = htmlDecodeMinimal(String(text || ""));
-
-  for (let i = 0; i < 4; i++) {
-    const parsed = tryJsonParse(`"${out.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`);
-    if (typeof parsed === "string" && parsed !== out) out = parsed;
-
-    const manually = out
-      .replace(/\\"/g, '"')
-      .replace(/\\\//g, "/")
-      .replace(/\\n/g, "\n")
-      .replace(/\\r/g, "\r")
-      .replace(/\\t/g, "\t")
-      .replace(/\\u0026/g, "&");
-
-    if (manually === out) break;
-    out = manually;
-  }
-
   return out;
 }
-
-function walk(value, onString, seen = new WeakSet()) {
-  if (typeof value === "string") {
-    onString(value);
-    return;
-  }
-
-  if (!value || typeof value !== "object") return;
-  if (seen.has(value)) return;
-  seen.add(value);
-
-  if (Array.isArray(value)) {
-    for (const child of value) walk(child, onString, seen);
-    return;
-  }
-
-  for (const child of Object.values(value)) walk(child, onString, seen);
+function isValidRecord(item) {
+  return !!(item && nameKey(item.name) && ['regular','neon','mega'].some(v =>
+    typeof item[v] === 'number' && Number.isFinite(item[v]) && item[v] >= 0));
 }
-
-function collectStringsFromNextFlight(html) {
-  const strings = [];
-  const needle = "self.__next_f.push";
-  let index = 0;
-
-  while (true) {
-    const pushIndex = html.indexOf(needle, index);
-    if (pushIndex === -1) break;
-
-    const openIndex = html.indexOf("(", pushIndex);
-    if (openIndex === -1) break;
-
-    const closeIndex = findMatchingBracket(html, openIndex, "(", ")");
-    if (closeIndex === -1) {
-      index = pushIndex + needle.length;
-      continue;
-    }
-
-    const rawArg = html.slice(openIndex + 1, closeIndex);
-    const parsed = tryJsonParse(rawArg);
-
-    if (parsed) {
-      walk(parsed, s => strings.push(s));
-    } else {
-      strings.push(rawArg);
-    }
-
-    index = closeIndex + 1;
-  }
-
-  return strings;
-}
-
-function extractInitialPetsArraysFromText(text) {
-  const arrays = [];
-  const versions = new Set();
-
-  const candidates = [String(text || ""), unescapeTextLayer(text)];
-
-  for (const candidate of candidates) {
-    if (!candidate || versions.has(candidate)) continue;
-    versions.add(candidate);
-
-    let index = 0;
-
-    while (true) {
-      const markerIndex = candidate.indexOf("initialPets", index);
-      if (markerIndex === -1) break;
-
-      const colonIndex = candidate.indexOf(":", markerIndex);
-      const openIndex = candidate.indexOf("[", colonIndex === -1 ? markerIndex : colonIndex);
-
-      if (openIndex !== -1) {
-        const closeIndex = findMatchingBracket(candidate, openIndex, "[", "]");
-        if (closeIndex !== -1) {
-          const rawArray = candidate.slice(openIndex, closeIndex + 1);
-          const parsed = tryJsonParse(rawArray) || tryJsonParse(unescapeTextLayer(rawArray));
-
-          if (Array.isArray(parsed)) arrays.push(parsed);
-
-          index = closeIndex + 1;
-          continue;
-        }
-      }
-
-      index = markerIndex + "initialPets".length;
+function mergeCandidate(store, input) {
+  if (!isValidRecord(input)) return;
+  const k = nameKey(input.name);
+  if (!k) return;
+  const existing = store.get(k);
+  if (!existing) { store.set(k, {...input}); return; }
+  for (const variant of ['regular','neon','mega']) {
+    // Prefer a numeric value from a public HTML row over indirect JSON guesses.
+    if (typeof input[variant] === 'number' &&
+        (existing[variant] === null || existing[variant] === undefined ||
+         (input.origin === 'public-table' && existing.origin !== 'public-table'))) {
+      existing[variant] = input[variant];
     }
   }
-
-  return arrays;
+  if (input.origin === 'public-table') existing.origin = input.origin;
 }
-
-// Extract candidate item arrays from structured responses used by newer client-rendered pages.
-// Only recognize item data with a name and a positive value, not unrelated JSON objects.
-function normalizeNestedItem(raw) {
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
-  const v = raw.values || raw.valuations;
-  if (!v || typeof v !== "object" || Array.isArray(v)) return raw;
-
-  const merged = { ...raw };
-  for (const [age, prefix] of [["default", "rvalue"], ["regular", "rvalue"], ["neon", "nvalue"], ["mega", "mvalue"]]) {
-    const values = v[age];
-    if (!values || typeof values !== "object") continue;
-    if (merged[prefix] === undefined) merged[prefix] = values.base ?? values.fly_ride ?? values.fr;
-    for (const [suffix, keys] of [
-      ["nopotion", ["nopotion", "np", "noPotion"]],
-      ["fly", ["fly", "f"]],
-      ["ride", ["ride", "r"]],
-      ["fly ride", ["fly_ride", "fr", "flyRide"]]
-    ]) {
-      const value = keys.map(key => values[key]).find(value => toNumber(value) > 0);
-      if (value !== undefined && merged[`${prefix} - ${suffix}`] === undefined) {
-        merged[`${prefix} - ${suffix}`] = value;
-      }
-    }
-  }
-  return merged;
-}
-
-function extractStructuredItemArrays(text) {
-  const parsed = tryJsonParse(String(text || "").trim());
-  if (!parsed || typeof parsed !== "object") return [];
-  const arrays = [];
-  const seen = new WeakSet();
-  let visited = 0;
-  function visit(value, depth) {
-    if (!value || typeof value !== "object" || depth > 16 || visited++ > 100000) return;
-    if (seen.has(value)) return;
-    seen.add(value);
-    if (Array.isArray(value)) {
-      const candidates = value.map(normalizeNestedItem).filter(value => convertElvebreddItem(value));
-      if (candidates.length) arrays.push(candidates);
-      // Walk only a few non-items to find nested arrays, not every pet value structure.
-      if (candidates.length === 0) for (const entry of value) visit(entry, depth + 1);
-      return;
-    }
-    const direct = normalizeNestedItem(value);
-    if (convertElvebreddItem(direct)) {
-      arrays.push([direct]);
-      return;
-    }
-    for (const child of Object.values(value)) visit(child, depth + 1);
-  }
-  visit(parsed, 0);
-  return arrays;
-}
-
-function cleanMergedNotes(item) {
-  if (!item || !item.valueMeta || !Array.isArray(item.valueMeta.notes)) return;
-
-  const notes = Array.from(new Set(item.valueMeta.notes));
-
-  item.valueMeta.notes = notes.filter(note => {
-    if ((item.NP || 0) > 0 && String(note).startsWith("NP was not exposed by Elvebredd")) {
-      return false;
-    }
-    return true;
-  });
-}
-
-function extractElvebreddItems(html) {
-  const arrays = [];
-
-  arrays.push(...extractStructuredItemArrays(html));
-
-  arrays.push(...extractInitialPetsArraysFromText(html));
-
-  const strings = collectStringsFromNextFlight(html);
-  for (const str of strings) {
-    arrays.push(...extractInitialPetsArraysFromText(str));
-    arrays.push(...extractStructuredItemArrays(str));
-  }
-
+function getCurrentNameIndex(db) {
   const map = new Map();
-
-  for (const arr of arrays) {
-    for (const raw of arr) {
-      const converted = convertElvebreddItem(raw);
-      if (!converted) continue;
-
-      const existing = map.get(converted.key);
-
-      if (!existing) {
-        map.set(converted.key, converted.item);
-      } else {
-        for (const variant of VARIANTS) {
-          if ((existing[variant] || 0) <= 0 && (converted.item[variant] || 0) > 0) {
-            existing[variant] = converted.item[variant];
-            existing.valueMeta.source[variant] = converted.item.valueMeta.source[variant];
-            existing.valueMeta.confidence[variant] = converted.item.valueMeta.confidence[variant];
-            existing.valueMeta.originalRaw[variant] = converted.item.valueMeta.originalRaw[variant];
-          }
-        }
-
-        existing.aliases = Array.from(new Set([...(existing.aliases || []), ...(converted.item.aliases || [])]));
-        existing.valueMeta.notes = Array.from(new Set([...(existing.valueMeta.notes || []), ...(converted.item.valueMeta.notes || [])]));
-        cleanMergedNotes(existing);
-      }
+  const ambiguous = new Set();
+  for (const [key, item] of Object.entries(db.items)) {
+    for (const candidate of [key, item.displayName, ...(item.aliases || [])]) {
+      const nk = nameKey(candidate);
+      if (!nk) continue;
+      if (map.has(nk) && map.get(nk) !== key) ambiguous.add(nk);
+      else map.set(nk, key);
     }
   }
-
-  for (const item of map.values()) cleanMergedNotes(item);
-
+  for (const nk of ambiguous) map.delete(nk);
   return map;
 }
+function prepareUpdate(db, rawRows, opts = {}) {
+  const minMatched = opts.minMatched ?? MIN_MATCHED_ITEMS;
+  const minPetCoverage = opts.minPetCoverage ?? MIN_PET_COVERAGE;
+  const byName = getCurrentNameIndex(db);
+  const changedItems = new Set();
+  let matched = 0, matchedPets = 0, updatedFields = 0, unmatched = 0, invalid = 0;
+  let outliers = 0, unchangedFields = 0;
+  const exampleChanges = [], unmatchedNames = [];
+  const seenDbKeys = new Set();
+  const petTotal = Object.values(db.items).filter(i => i.category === 'pets').length;
+  const next = structuredClone(db);
+  const sorted = [...rawRows].sort((a,b) => a.name.localeCompare(b.name));
+  for (const r of sorted) {
+    if (!isValidRecord(r)) {invalid++; continue;}
+    const key = byName.get(nameKey(r.name)) || byName.get(nameKey(r.slug));
+    if (!key) {unmatched++; if (unmatchedNames.length < 30) unmatchedNames.push(r.name); continue;}
+    if (seenDbKeys.has(key)) continue;
+    seenDbKeys.add(key);
+    matched++;
+    const oldItem = db.items[key];
+    const item = next.items[key];
+    if (item.category === 'pets') matchedPets++;
+    const mapping = item.category === 'pets' ? {regular:'NP',neon:'N',mega:'M'} : {regular:'NP'};
+    for (const [src, fieldName] of Object.entries(mapping)) {
+      const n = r[src];
+      if (typeof n !== 'number' || !Number.isFinite(n) || n < 0) continue;
+      const old = Number(oldItem[fieldName]);
+      // Ignore an individual extreme outlier rather than corrupting a trusted field.
+      if (old > 0 && n > 0 && (n / old > 25 || old / n > 25)) {outliers++; continue;}
+      if (old === n) {unchangedFields++; continue;}
+      item[fieldName] = n;
+      item.valueMeta ||= {};
+      item.valueMeta.source ||= {};
+      item.valueMeta.confidence ||= {};
+      item.valueMeta.originalRaw ||= {};
+      item.valueMeta.source[fieldName] = `amverse:elvebredd:${src}`;
+      item.valueMeta.confidence[fieldName] = 'direct-public-list';
+      item.valueMeta.originalRaw[fieldName] = n;
+      // A non-pet can only have a single Regular value. Keep legacy FR in sync
+      // only where it was already a duplicate of NP.
+      if (src === 'regular' && item.category !== 'pets' && oldItem.FR === oldItem.NP) {
+        item.FR = n;
+        item.valueMeta.source.FR = `amverse:elvebredd:${src}`;
+        item.valueMeta.confidence.FR = 'copied-from-np-nonpet';
+        item.valueMeta.originalRaw.FR = n;
+      }
+      changedItems.add(key);
+      updatedFields++;
+      if (exampleChanges.length < 20) exampleChanges.push({name: item.displayName, field:fieldName, before:oldItem[fieldName], after:n});
+    }
+  }
+  const petCoverage = petTotal ? matchedPets / petTotal : 0;
+  const stats = {source: SOURCE_URL, candidates:rawRows.length, matched, matchedPets, petTotal,
+    petCoverage:Math.round(petCoverage*10000)/10000, changedItems:changedItems.size, updatedFields,
+    unchangedFields, outliers, unmatched, invalid, exampleChanges, unmatchedNames};
+  if (matched < minMatched || petCoverage < minPetCoverage) {
+    const error = new Error(`Safety check failed: only ${matched} matches (${matchedPets}/${petTotal} pets, ${(100*petCoverage).toFixed(1)}%). Requires >=${minMatched} matches and >=${(minPetCoverage*100).toFixed(1)}% of pets. Existing DB preserved.`);
+    error.stats = stats;
+    throw error;
+  }
+  if (matched > 0 && outliers > matched * 0.08) {
+    const error = new Error(`Too many extreme-value outliers (${outliers}/${matched}). Existing DB preserved.`);
+    error.stats = stats;
+    throw error;
+  }
+  if (updatedFields) {
+    next.updatedAt = new Date().toISOString();
+    next.source = 'elvebredd-through-amverse-public-values';
+    next.sourceUrl = SOURCE_URL;
+    next.itemCount = Object.keys(next.items).length;
+    next.amverseLastFetch = {at: next.updatedAt, matched, changedItems:changedItems.size,
+      updatedFields, variantsUpdated: ['NP','N','M'], note:'Other variant values retained from previous Elvebredd snapshot.'};
+  }
+  return {db:next, stats};
+}
 
-async function fetchPage(url) {
-  const response = await fetch(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (compatible; XyneriaElvebreddUpdater/1.0; +https://github.com/)",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cache-Control": "no-cache"
-    },
-    redirect: "follow"
+async function readVisibleTable(page) {
+  const rows = await page.evaluate(() => {
+    return [...document.querySelectorAll('table tbody tr')].map(tr => {
+      const cells = [...tr.querySelectorAll('td')].map(td => (td.innerText || td.textContent || '').trim());
+      const anchor = tr.querySelector('a[href*="/pet/"]');
+      return {name:(anchor?.innerText || anchor?.textContent || cells[0] || '').trim(), href: anchor?.getAttribute('href') || '', cells};
+    });
   });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${url}: HTTP ${response.status} ${response.statusText}`);
-  }
-
-  return await response.text();
+  return rows.map(parseTableRow).filter(Boolean);
 }
-
-// Client-side fallback and safe network diagnostics for changes in Elvebredd's data loading.
-// Diagnostics intentionally omit request bodies, cookies, authorization headers and query strings.
-function safeResourceLabel(url) {
-  try {
-    const parsed = new URL(url);
-    const segments = parsed.pathname.split("/").map(segment => {
-      if (segment.length > 28 || /[a-f0-9]{16,}/i.test(segment) || /@/.test(segment)) return "[redacted]";
-      return segment;
-    });
-    return `${parsed.hostname}${segments.join("/")}`.slice(0, 180);
-  } catch (_) {
-    return "[unavailable]";
-  }
+async function consumeTable(page, records, log) {
+  const rows = await readVisibleTable(page);
+  for (const r of rows) mergeCandidate(records, r);
+  log.tableScans++;
+  return rows.length;
 }
-
-function summarizeJsonShape(text) {
-  if (!text || text.length > 8 * 1024 * 1024) return null;
+function looksRelevantUrl(url) {
   try {
-    const obj = JSON.parse(text);
-    function shape(value) {
-      if (Array.isArray(value)) {
-        return { type: "array", length: value.length,
-          firstKeys: value[0] && typeof value[0] === "object"
-            ? Object.keys(value[0]).slice(0, 18) : [] };
-      }
-      if (value && typeof value === "object") {
-        return { type: "object", keys: Object.keys(value).slice(0, 22),
-          children: Object.fromEntries(Object.entries(value).slice(0, 12)
-            .filter(([, child]) => child && typeof child === "object")
-            .map(([key, child]) => [key, Array.isArray(child)
-              ? { type: "array", length: child.length, firstKeys: child[0] && typeof child[0] === "object" ? Object.keys(child[0]).slice(0, 14) : [] }
-              : { type: "object", keys: Object.keys(child).slice(0, 14) }])) };
-      }
-      return { type: typeof value };
+    const u = new URL(url);
+    return (u.hostname === 'amverse.co' || u.hostname === 'www.amverse.co') &&
+       /\b(value|pet|item|catalog|list|data)\b/i.test(u.pathname);
+  } catch { return false; }
+}
+async function extractPublicValues(db, log) {
+  // Lazy import: test suite needs no browser installation.
+  const { chromium } = require('playwright');
+  const browser = await chromium.launch({headless:HEADLESS, args:['--no-sandbox']});
+  const context = await browser.newContext({viewport:{width:1440,height:1000}, locale:'en-GB'});
+  const page = await context.newPage();
+  const found = new Map();
+  const asyncTasks = [];
+  let relevantSearchTraffic = 0;
+  page.on('response', response => {
+    if (!looksRelevantUrl(response.url())) return;
+    const url = new URL(response.url());
+    const contentType = String(response.headers()['content-type'] || '');
+    if (log.networkSamples.length < 30) log.networkSamples.push({path:url.pathname,status:response.status(),contentType:contentType.slice(0,80)});
+    if (/\/api\//.test(url.pathname)) relevantSearchTraffic++;
+    if (!/json/i.test(contentType)) return;
+    const task = (async () => {
+      try {
+        const body = await response.json();
+        const rows = extractJsonRecords(body);
+        if (rows.length) log.jsonCandidates += rows.length;
+        for (const r of rows) mergeCandidate(found, r);
+      } catch (e) { if (DEBUG) log.errors.push(`JSON: ${String(e).slice(0,150)}`); }
+    })();
+    asyncTasks.push(task);
+  });
+  page.on('requestfailed', req => {
+    if (log.failedRequests.length < 12) {
+      try {const url=new URL(req.url());log.failedRequests.push({path:url.pathname,error:req.failure()?.errorText||'request failed'});} catch {}
     }
-    return shape(obj);
-  } catch (_) {
-    return null;
-  }
-}
-
-async function fetchWithBrowser(url) {
-  const { chromium } = require("playwright");
-  const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
-  const map = new Map();
-  const captured = [];
-  const requests = [];
-  const network = [];
-  const failures = [];
-  const pending = [];
-  const errors = [];
-  const jsonShapes = [];
-  const observedOrigins = new Set();
-  // Save public, first-party JavaScript chunks for offline inspection when the
-  // site's serialized data changes. Never save page HTML, headers, cookies,
-  // request bodies, or third-party scripts.
-  const publicJSChunks = [];
-  const publicJSLimitBytes = 24 * 1024 * 1024;
-  let publicJSBytes = 0;
-  let publicJSCount = 0;
-  const publicJSFolder = "elvebredd_diagnostic_chunks";
-  let pageState = null;
-
-  function ingest(text, label) {
-    if (!text) return;
-    if (!/(initialPets|rvalue|nvalue|mvalue|"values"|\\"values\\"|"pets"|"items")/i.test(text)) return;
-    const items = extractElvebreddItems(text);
-    if (captured.length < 120) captured.push({ resource: label, parsedItems: items.size });
-    for (const [key, item] of items) {
-      const existing = map.get(key);
-      if (!existing) { map.set(key, item); continue; }
-      for (const variant of VARIANTS) {
-        if ((existing[variant] || 0) <= 0 && item[variant] > 0) {
-          existing[variant] = item[variant];
-          existing.valueMeta.source[variant] = item.valueMeta.source[variant];
-          existing.valueMeta.confidence[variant] = item.valueMeta.confidence[variant];
-          existing.valueMeta.originalRaw[variant] = item.valueMeta.originalRaw[variant];
-        }
-      }
-    }
-  }
-
+  });
   try {
-    const context = await browser.newContext({
-      userAgent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-      locale: "en-US"
-    });
-    const page = await context.newPage();
-    page.on("pageerror", error => errors.push(`Page error: ${String(error.message).slice(0, 180)}`));
-    page.on("request", request => {
-      if (requests.length < 350) {
-        requests.push({ resource: safeResourceLabel(request.url()),
-          type: request.resourceType(), method: request.method() });
-      }
-    });
-    page.on("requestfailed", request => {
-      if (failures.length < 60) failures.push({
-        resource: safeResourceLabel(request.url()),
-        type: request.resourceType(),
-        reason: String(request.failure()?.errorText || "unknown").slice(0, 120)
-      });
-    });
-    page.on("response", response => {
-      const responseUrl = response.url();
-      let host = "";
-      try { host = new URL(responseUrl).hostname.toLowerCase(); } catch (_) { return; }
-      observedOrigins.add(host);
-      const type = (response.headers()["content-type"] || "").toLowerCase();
-      const resourceType = response.request().resourceType();
-      const resource = safeResourceLabel(responseUrl);
-      const status = response.status();
-      const sizeHint = Number(response.headers()["content-length"] || 0);
-      if (network.length < 350) network.push({ resource, status, type: resourceType,
-        contentType: type.split(";")[0], bytesAdvertised: sizeHint || undefined });
-      if (sizeHint > 8 * 1024 * 1024) return;
-      const isJson = /json|ndjson/.test(type);
-      const isOfficial = host === "elvebredd.com" || host.endsWith(".elvebredd.com") || host === "elvebredd.net" || host.endsWith(".elvebredd.net");
-      if (!isJson && !(isOfficial && /javascript|html|text\/plain/.test(type))) return;
-      pending.push((async () => {
-        try {
-          const body = await response.body();
-          if (body.length > 8 * 1024 * 1024) return;
-          const text = body.toString("utf8");
-          if (isJson && jsonShapes.length < 60) {
-            jsonShapes.push({ resource, status, bytes: body.length,
-              shape: summarizeJsonShape(text) });
-          }
-          ingest(text, resource);
-          if (isOfficial && resourceType === "script" && /\.js$/i.test(resource)
-              && body.length > 0 && body.length < 5 * 1024 * 1024
-              && publicJSCount < 40 && publicJSBytes + body.length < publicJSLimitBytes) {
-            // A fresh browser context ensures these are unauthenticated public files.
-            const filename = `chunk-${String(++publicJSCount).padStart(3, "0")}.js`;
-            try {
-              await fs.mkdir(publicJSFolder, { recursive: true });
-              await fs.writeFile(`${publicJSFolder}/${filename}`, body);
-              publicJSBytes += body.length;
-              publicJSChunks.push({ filename, resource, bytes: body.length,
-                matchesOldKeys: /initialPets|rvalue|nvalue|mvalue/i.test(text) });
-            } catch (e) {
-              errors.push(`Could not save public script ${filename}: ${String(e.message).slice(0, 100)}`);
+    const resp = await page.goto(SOURCE_URL, {waitUntil:'domcontentloaded',timeout:60000});
+    log.pageStatus = resp?.status() || null;
+    const lastUpdatedText = await page.locator('body').innerText().then(t => t.match(/Values last updated\s+([^\n]+)/i)?.[1]?.trim() || null).catch(() => null);
+    log.siteUpdatedText = lastUpdatedText;
+    if (lastUpdatedText) {
+      const lastUpdated = new Date(lastUpdatedText);
+      if (Number.isFinite(lastUpdated.getTime()) && (Date.now()-lastUpdated.getTime()) > 72*3600*1000)
+        throw new Error('AMVerse values page reports data older than 72 hours; refusing a stale update.');
+    }
+    if (!resp || resp.status() >= 400) throw new Error(`AMVerse values page returned HTTP ${resp?.status()}`);
+    await page.waitForTimeout(1300);
+    await consumeTable(page, found, log);
+    // Some versions render the entire catalogue into JSON in Next.js hydration.
+    // Parse only public JSON scripts (never credentials, local storage or cookies).
+    const publicScripts = await page.evaluate(() => [...document.querySelectorAll('script[type="application/json"],script#__NEXT_DATA__')]
+      .map(s => s.textContent || '').filter(s => s.length < 20_000_000).slice(0,20));
+    for (const script of publicScripts) {
+      try {
+        const records = extractJsonRecords(JSON.parse(script));
+        log.jsonCandidates += records.length;
+        for (const record of records) mergeCandidate(found, record);
+      } catch {}
+    }
+    // Paginated or lazy-loaded rows: scroll a little and try accessible Next controls.
+    for (let n=0; n<45; n++) {
+      await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+      await page.waitForTimeout(100);
+      const before = found.size;
+      await consumeTable(page, found, log);
+      const next = page.getByRole('button',{name:/^(next|next page|more|load more)$/i}).first();
+      if (await next.count() && await next.isEnabled().catch(()=>false)) {
+        await next.click({timeout:2000}).catch(()=>{});
+        await page.waitForTimeout(170);
+        await consumeTable(page,found,log);
+      } else if (found.size === before) break;
+    }
+    await Promise.allSettled(asyncTasks);
+    log.beforeSearch = found.size;
+    const nameIndex = getCurrentNameIndex(db);
+    const petCount = Object.values(db.items).filter(x => x.category==='pets').length;
+    const existingPetCoverage = [...found.values()].filter(x=>{
+      const k=nameIndex.get(nameKey(x.name));return k&&db.items[k].category==='pets';
+    }).length / Math.max(petCount,1);
+    // Search only if bulk extraction didn't already cover most pet entries.
+    if (found.size < 2600 || existingPetCoverage < 0.85) {
+      const search = page.locator('input[placeholder*="Search" i]').first();
+      if (await search.count()) {
+        log.searchAvailable = true;
+        // Prioritise all pets; after these, try other items so their one-form
+        // Regular values are not left behind. Search is one UI action at a time.
+        const names = Object.entries(db.items).sort((a,b) => {
+          const p = Number(b[1].category==='pets')-Number(a[1].category==='pets');
+          return p || (a[1].displayName||a[0]).localeCompare(b[1].displayName||b[0]);
+        });
+        const started = performance.now();
+        const cap = Math.max(0,Math.min(names.length,MAX_SEARCH_QUERIES));
+        for (let i=0;i<cap;i++) {
+          if (performance.now()-started > MAX_FETCH_MINUTES*60*1000) {log.timeLimitReached = true;break;}
+          const [key,item] = names[i];
+          const label = nameKey(item.displayName || key);
+          const previouslyFound = found.has(label);
+          if (previouslyFound) continue;
+          const trafficBefore = relevantSearchTraffic;
+          try {
+            await search.fill(item.displayName || key,{timeout:3500});
+            // Client-side filtering generally settles within two animation frames;
+            // a debounce/network-backed UI needs a little longer.
+            await page.waitForTimeout(relevantSearchTraffic>log.initialApiRequests+12 ? 380 : 95);
+            let rows = await readVisibleTable(page);
+            if (!rows.some(r => nameKey(r.name)===label)) {
+              await page.waitForTimeout(260);
+              rows = await readVisibleTable(page);
             }
-          }
-        } catch (e) {
-          errors.push(`Could not inspect ${resource}: ${String(e.message).slice(0, 100)}`);
+            for (const r of rows) {
+              if (nameKey(r.name) === label) mergeCandidate(found,r);
+            }
+            log.searchQueries++;
+          } catch (e) {if (log.errors.length<15)log.errors.push(`Search ${i}: ${String(e).slice(0,130)}`);}
+          // Keep requests modest if the search UI is server-backed.
+          if (relevantSearchTraffic>trafficBefore) await page.waitForTimeout(500);
+          if (i%150===0 && i>0) console.log(`AMVerse search: ${i}/${cap}; collected ${found.size} candidates`);
         }
-      })());
-    });
-
-    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 45000 });
-    await page.waitForTimeout(BROWSER_WAIT_MS);
-    ingest(await page.content(), "rendered HTML");
-    pageState = { title: (await page.title()).slice(0, 120),
-      url: safeResourceLabel(page.url()),
-      visibleText: (await page.locator("body").innerText().catch(() => "")).slice(0, 380) };
-    if (map.size < MIN_ITEMS) {
-      for (const selector of [
-        'button[aria-label*="Add" i]',
-        'button:has(img[alt*="Add Pets" i])',
-        '[role="button"]:has(img[alt*="Add Pets" i])'
-      ]) {
-        try {
-          const button = page.locator(selector).first();
-          if (await button.count() && await button.isVisible()) {
-            await button.click({ timeout: 2500 });
-            await page.waitForTimeout(4000);
-            ingest(await page.content(), "opened item chooser");
-            pageState.chooserVisibleText = (await page.locator("body").innerText().catch(() => "")).slice(0, 380);
-            break;
-          }
-        } catch (e) { errors.push(`Picker interaction: ${String(e.message).slice(0, 120)}`); }
+        await search.fill('').catch(()=>{});
+      } else {
+        log.searchAvailable = false;
       }
     }
-    await Promise.allSettled(pending);
-    await context.close();
-  } catch (error) {
-    errors.push(`Browser: ${String(error.message).slice(0, 250)}`);
+    await Promise.allSettled(asyncTasks);
+    log.count = found.size;
+    log.exampleValues = [...found.values()].slice(0,14);
+    return [...found.values()];
   } finally {
     await browser.close();
-  }
-
-  const diagnostic = {
-    checkedAt: new Date().toISOString(),
-    summary: { requests: requests.length, responses: network.length,
-      inspectedResponses: captured.length, extractedItems: map.size,
-      hosts: Array.from(observedOrigins).sort() },
-    pageState,
-    // Put likely first-party data calls ahead of ads, analytics, fonts and other assets.
-    network: network.sort((a, b) => {
-      const rank = x => (x.type === "fetch" || x.type === "xhr" ? 0 : x.status >= 400 ? 1 : x.type === "document" ? 2 : 3);
-      return rank(a) - rank(b);
-    }).slice(0, 220),
-    requestFailures: failures,
-    jsonResponseShapes: jsonShapes,
-    publicJSChunks,
-    parsedCandidates: captured,
-    errors: errors.slice(0, 30)
-  };
-  try { await fs.writeFile(DIAGNOSTICS_FILE, JSON.stringify(diagnostic, null, 2) + "\n"); }
-  catch (error) { console.warn(`Could not write diagnostics: ${error.message}`); }
-  console.log(`Browser inspected ${network.length} responses on ${observedOrigins.size} hosts; found ${map.size} items.`);
-  return map;
-}
-
-function categoryCounts(items) {
-  const counts = {};
-
-  for (const item of items) {
-    const key = item.category || "unknown";
-    counts[key] = (counts[key] || 0) + 1;
-  }
-
-  return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)));
-}
-
-function countPositiveVariantCells(items) {
-  let count = 0;
-
-  for (const item of Object.values(items || {})) {
-    for (const variant of VARIANTS) {
-      if (toNumber(item && item[variant]) > 0) count++;
-    }
-  }
-
-  return count;
-}
-
-function countNormalizedNonPetItems(items) {
-  let count = 0;
-
-  for (const item of Object.values(items || {})) {
-    const notes = item && item.valueMeta && Array.isArray(item.valueMeta.notes)
-      ? item.valueMeta.notes
-      : [];
-
-    if (notes.some(note => String(note).startsWith("NP copied from Elvebredd's regular rvalue for confirmed non-pet"))) {
-      count++;
-    }
-  }
-
-  return count;
-}
-
-async function readPreviousOutput() {
-  try {
-    const text = await fs.readFile(OUT_FILE, "utf8");
-    if (!text.trim()) {
-      throw new Error(`${OUT_FILE} exists but is empty.`);
-    }
-
-    const parsed = JSON.parse(text);
-    if (!parsed || typeof parsed !== "object" || !parsed.items || typeof parsed.items !== "object") {
-      throw new Error(`${OUT_FILE} exists but does not contain a valid items object.`);
-    }
-
-    return parsed;
-  } catch (error) {
-    if (error && error.code === "ENOENT") return null;
-    throw new Error(`Refusing to replace the existing database because it could not be read safely: ${error.message}`);
-  }
-}
-
-function validateRatio(name, value) {
-  if (!Number.isFinite(value) || value <= 0 || value > 1) {
-    throw new Error(`${name} must be a number greater than 0 and at most 1. Received: ${value}`);
-  }
-}
-
-function validateCandidate(output, previousOutput) {
-  if (!Number.isFinite(MIN_ITEMS) || MIN_ITEMS < 1) {
-    throw new Error(`MIN_ITEMS must be a positive number. Received: ${MIN_ITEMS}`);
-  }
-
-  validateRatio("MIN_PREVIOUS_ITEM_RATIO", MIN_PREVIOUS_ITEM_RATIO);
-  validateRatio("MIN_PREVIOUS_OVERLAP_RATIO", MIN_PREVIOUS_OVERLAP_RATIO);
-  validateRatio("MIN_PREVIOUS_NONZERO_RATIO", MIN_PREVIOUS_NONZERO_RATIO);
-
-  const items = output.items || {};
-  const keys = Object.keys(items);
-
-  if (keys.length < MIN_ITEMS) {
-    throw new Error(`Only extracted ${keys.length} item(s). Expected at least ${MIN_ITEMS}. Elvebredd page format may have changed.`);
-  }
-
-  const shadow = items["shadow dragon"];
-  if (!shadow) {
-    throw new Error("Safety check failed: Shadow Dragon is missing from the generated database.");
-  }
-
-  const shadowHasRegularValue = ["NP", "F", "R", "FR"].some(variant => toNumber(shadow[variant]) > 0);
-  if (!shadowHasRegularValue) {
-    throw new Error("Safety check failed: Shadow Dragon has no positive regular value.");
-  }
-
-  for (const key of KNOWN_NON_PET_SENTINELS) {
-    const item = items[key];
-    if (!item) continue;
-
-    if (toNumber(item.FR) > 0 && toNumber(item.NP) <= 0) {
-      throw new Error(`Safety check failed: known non-pet '${item.displayName || key}' still has FR but no NP value.`);
-    }
-  }
-
-  if (!previousOutput || !previousOutput.items || typeof previousOutput.items !== "object") {
-    return;
-  }
-
-  const previousItems = previousOutput.items;
-  const previousKeys = Object.keys(previousItems);
-  const previousCount = previousKeys.length;
-  const newCount = keys.length;
-
-  if (previousCount > 0) {
-    const itemRatio = newCount / previousCount;
-    if (itemRatio < MIN_PREVIOUS_ITEM_RATIO) {
-      throw new Error(
-        `Safety check failed: item count dropped from ${previousCount} to ${newCount} ` +
-        `(${(itemRatio * 100).toFixed(2)}% of previous; minimum ${(MIN_PREVIOUS_ITEM_RATIO * 100).toFixed(2)}%).`
-      );
-    }
-
-    let overlap = 0;
-    for (const key of previousKeys) {
-      if (Object.prototype.hasOwnProperty.call(items, key)) overlap++;
-    }
-
-    const overlapRatio = overlap / previousCount;
-    if (overlapRatio < MIN_PREVIOUS_OVERLAP_RATIO) {
-      throw new Error(
-        `Safety check failed: only ${overlap}/${previousCount} previous item keys remain ` +
-        `(${(overlapRatio * 100).toFixed(2)}%; minimum ${(MIN_PREVIOUS_OVERLAP_RATIO * 100).toFixed(2)}%).`
-      );
-    }
-  }
-
-  const previousPositiveCells = countPositiveVariantCells(previousItems);
-  const newPositiveCells = countPositiveVariantCells(items);
-
-  if (previousPositiveCells > 0) {
-    const nonzeroRatio = newPositiveCells / previousPositiveCells;
-    if (nonzeroRatio < MIN_PREVIOUS_NONZERO_RATIO) {
-      throw new Error(
-        `Safety check failed: positive value cells dropped from ${previousPositiveCells} to ${newPositiveCells} ` +
-        `(${(nonzeroRatio * 100).toFixed(2)}% of previous; minimum ${(MIN_PREVIOUS_NONZERO_RATIO * 100).toFixed(2)}%).`
-      );
-    }
-  }
-}
-
-async function writeAtomically(path, text) {
-  const tempPath = `${path}.tmp`;
-
-  await fs.writeFile(tempPath, text, "utf8");
-
-  try {
-    await fs.rename(tempPath, path);
-  } catch (error) {
-    try {
-      await fs.unlink(tempPath);
-    } catch (_) {
-
-    }
-    throw error;
   }
 }
 
 async function main() {
-  console.log(`Fetching Elvebredd values from ${ELVEBREDD_URL}`);
-
-
-
-  const previousOutput = await readPreviousOutput();
-
-  let itemMap = new Map();
+  const log = {generatedAt: new Date().toISOString(), source:SOURCE_URL, networkSamples:[],
+    failedRequests:[], errors:[], jsonCandidates:0, tableScans:0, beforeSearch:0,
+    searchQueries:0, pageStatus:null, sourceMode:'public-page-no-api-key'};
   try {
-    const html = await fetchPage(ELVEBREDD_URL);
-    itemMap = extractElvebreddItems(html);
-    console.log(`Direct response: extracted ${itemMap.size} items from ${html.length} bytes of HTML.`);
-  } catch (error) {
-    console.warn(`Direct request failed: ${error.message}`);
-  }
-
-  const lastCount = previousOutput ? Object.keys(previousOutput.items).length : 0;
-  const expectedCount = Math.max(MIN_ITEMS, Math.ceil(lastCount * MIN_PREVIOUS_ITEM_RATIO));
-  if (itemMap.size < expectedCount) {
-    console.warn(`Trying browser fallback; direct extraction returned ${itemMap.size} item(s), need at least ${expectedCount}.`);
-    const browserItems = await fetchWithBrowser(ELVEBREDD_URL);
-    if (browserItems.size > itemMap.size) itemMap = browserItems;
-  }
-  const sortedEntries = Array.from(itemMap.entries()).sort(([a], [b]) => a.localeCompare(b));
-  const items = Object.fromEntries(sortedEntries);
-
-  const output = {
-    version: 5,
-    updatedAt: new Date().toISOString(),
-    source: "elvebredd-initialPets-auto-generated",
-    sourceUrl: ELVEBREDD_URL,
-    itemCount: sortedEntries.length,
-    valueScale: "elvebredd-display-values",
-    variantKeys: {
-      NP: "No Potion / Normal / Default no-potion value when exposed",
-      F: "Regular Fly-only value when exposed",
-      R: "Regular Ride-only value when exposed",
-      FR: "Regular/default Fly Ride value from rvalue",
-      N: "Neon value (plain, no fly/ride)",
-      NF: "Neon Fly-only value when exposed",
-      NR: "Neon Ride-only value when exposed",
-      NFR: "Neon Fly Ride value from bare nvalue",
-      M: "Mega value (plain, no fly/ride)",
-      MF: "Mega Fly-only value when exposed",
-      MR: "Mega Ride-only value when exposed",
-      MFR: "Mega Fly Ride value from bare mvalue"
-    },
-    fieldMapping: {
-      NP: "rvalue - nopotion",
-      F: "rvalue - fly",
-      R: "rvalue - ride",
-      FR: "rvalue",
-      N: "nvalue - nopotion",
-      NF: "nvalue - fly",
-      NR: "nvalue - ride",
-      NFR: "nvalue (bare) / nvalue - fly ride / nvalue - fr",
-      M: "mvalue - nopotion",
-      MF: "mvalue - fly",
-      MR: "mvalue - ride",
-      MFR: "mvalue (bare) / mvalue - fly ride / mvalue - fr"
-    },
-    categoryItemCounts: categoryCounts(Object.values(items)),
-    items
-  };
-
-  validateCandidate(output, previousOutput);
-
-  const serialized = JSON.stringify(output, null, 2) + "\n";
-  await writeAtomically(OUT_FILE, serialized);
-
-  const normalizedNonPets = countNormalizedNonPetItems(items);
-
-  console.log(`Wrote ${OUT_FILE} with ${sortedEntries.length} items.`);
-  console.log(`Safely copied regular rvalue into NP for ${normalizedNonPets} confirmed non-pet item(s).`);
-
-  const shadow = items["shadow dragon"];
-  console.log(
-    "Shadow Dragon check:",
-    JSON.stringify({
-      NP: shadow.NP,
-      F: shadow.F,
-      R: shadow.R,
-      FR: shadow.FR,
-      N: shadow.N,
-      NFR: shadow.NFR,
-      M: shadow.M,
-      MFR: shadow.MFR
-    })
-  );
-
-  for (const key of KNOWN_NON_PET_SENTINELS) {
-    const item = items[key];
-    if (!item) continue;
-
-    console.log(
-      `Known non-pet check (${item.displayName || key}):`,
-      JSON.stringify({ NP: item.NP, FR: item.FR })
-    );
+    const db = JSON.parse(await fs.readFile(DB_PATH,'utf8'));
+    if (!db?.items || Object.keys(db.items).length < 100) throw new Error('Missing or incomplete existing database. Refusing to update.');
+    const rows = await extractPublicValues(db,log);
+    const result = prepareUpdate(db,rows);
+    log.statistics = result.stats;
+    console.log('AMVerse extraction result:',JSON.stringify(result.stats,null,2));
+    if (DRY_RUN) console.log('DRY_RUN=true: database not changed.');
+    else if (result.stats.updatedFields) {
+      const tmp = `${DB_PATH}.tmp-${process.pid}`;
+      await fs.writeFile(tmp,JSON.stringify(result.db,null,2)+'\n','utf8');
+      JSON.parse(await fs.readFile(tmp,'utf8'));
+      await fs.rename(tmp,DB_PATH);
+      console.log(`Updated ${result.stats.updatedFields} fields in ${result.stats.changedItems} items; original 12-variant format preserved.`);
+    } else console.log('No observed changes; existing DB preserved.');
+    if (process.env.GITHUB_STEP_SUMMARY) {
+      await fs.appendFile(process.env.GITHUB_STEP_SUMMARY,`### AMVerse value update\n\nMatched ${result.stats.matched} existing items; updated ${result.stats.updatedFields} fields (${result.stats.changedItems} items). Other variants preserved.\n`);
+    }
+  } catch (e) {
+    log.error = String(e?.stack || e);
+    if (e?.stats) log.statistics = e.stats;
+    console.error(log.error);
+    process.exitCode = 1;
+  } finally {
+    await fs.writeFile(DIAGNOSTICS_PATH,JSON.stringify(log,null,2)+'\n').catch(()=>{});
   }
 }
-
-if (require.main === module) {
-  main().catch(error => {
-    console.error(error);
-    process.exit(1);
-  });
-}
-
-module.exports = { extractElvebreddItems, extractStructuredItemArrays, validateCandidate };
+if (require.main === module) main();
+module.exports = {nameKey,numericValue,parseTableRow,extractEmbeddedRecord,extractJsonRecords,mergeCandidate,prepareUpdate,isValidRecord};
