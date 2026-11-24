@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-24T16:53:13.833Z",
+  "updatedAt": "2026-11-24T16:53:38.948Z",
   "source": "elvebredd-owner-published-snapshot",
   "sourceUrl": "https://elvebredd.com/calculator",
   "itemCount": 3475,
@@ -161660,8 +161660,8 @@
   },
   "lastElveSource": {
     "repo": "xjacksssss/elve-values-public",
-    "snapshotAt": "2026-11-24T16:53:13.661Z",
-    "importedAt": "2026-11-24T16:53:13.833Z",
+    "snapshotAt": "2026-11-24T08:53:20.841Z",
+    "importedAt": "2026-11-24T16:53:38.948Z",
     "matchedItems": 3473,
     "insertedPets": 0,
     "changedFields": 429
