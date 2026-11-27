@@ -1,6 +1,6 @@
 {
   "version": 5,
-  "updatedAt": "2026-11-27T10:05:27.530Z",
+  "updatedAt": "2026-11-27T22:18:05.667Z",
   "source": "elvebredd-owner-published-snapshot",
   "sourceUrl": "https://elvebredd.com/calculator",
   "itemCount": 3475,
@@ -33980,10 +33980,10 @@
       "NF": 269,
       "NR": 269,
       "NFR": 270,
-      "M": 996,
-      "MF": 958.9,
-      "MR": 958,
-      "MFR": 960,
+      "M": 1046,
+      "MF": 1008.9,
+      "MR": 1008,
+      "MFR": 1010,
       "demand": {},
       "aliases": [],
       "valueMeta": {
@@ -34024,10 +34024,10 @@
           "NF": 269,
           "NR": 269,
           "NFR": 270,
-          "M": 996,
-          "MF": 958.9,
-          "MR": 958,
-          "MFR": 960
+          "M": 1046,
+          "MF": 1008.9,
+          "MR": 1008,
+          "MFR": 1010
         },
         "notes": [],
         "elvebreddId": 2552,
@@ -161660,10 +161660,10 @@
   },
   "lastElveSource": {
     "repo": "xjacksssss/elve-values-public",
-    "snapshotAt": "2026-11-27T07:14:17.528Z",
-    "importedAt": "2026-11-27T10:05:27.530Z",
+    "snapshotAt": "2026-11-27T20:48:21.756Z",
+    "importedAt": "2026-11-27T22:18:05.667Z",
     "matchedItems": 3473,
     "insertedPets": 0,
-    "changedFields": 378
+    "changedFields": 4
   }
 }
